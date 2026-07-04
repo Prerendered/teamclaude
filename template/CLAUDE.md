@@ -18,6 +18,9 @@ he does not fill out forms. Do not ask everything at once.
 5. Stack — default Next.js + Convex + shadcn/ui + Tailwind + Bun.
    Deviations: offline-first → SQLite; extension → Vite + React + MV3;
    desktop → Tauri; multi-target → Bun workspaces.
+   Not limited to these — Unity, plain React, anything the project needs.
+   A stack without a scaffold skill is fine: the architect derives the
+   structure from reference repos instead.
 6. Open questions — resolve anything that blocks user stories.
 Write team/plan.md. Present it. STOP.
 

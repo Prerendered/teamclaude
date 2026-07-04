@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/jesjugroo/claude-team.git}"
-STACKS="next-convex tauri expo extension"
+SCAFFOLDED_STACKS="next-convex tauri expo extension"
 STACK=""
 VERSION=""
 FORCE=0
@@ -14,8 +14,10 @@ usage() {
 Usage: install.sh --stack <name> [--version <tag>] [--force]
 
 Flags:
-  --stack <name>    Required. One of: ${STACKS// /, }.
-                    Keeps only the matching scaffold skill.
+  --stack <name>    Required. Stacks with a scaffold skill:
+                    ${SCAFFOLDED_STACKS// /, }.
+                    Any other name (unity, react-spa, ...) installs without a
+                    scaffold — the architect derives structure from references.
   --version <tag>   Team version to install (git tag, e.g. v1.0).
                     Defaults to the latest tag — never main HEAD.
   --force           Overwrite an existing .claude/ directory.
@@ -38,9 +40,9 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$STACK" ]; then usage >&2; fail "--stack is required"; fi
-case " $STACKS " in
-  *" $STACK "*) ;;
-  *) fail "unknown stack: $STACK (available: $STACKS)" ;;
+HAS_SCAFFOLD=0
+case " $SCAFFOLDED_STACKS " in
+  *" $STACK "*) HAS_SCAFFOLD=1 ;;
 esac
 
 if [ -d .claude ] && [ "$FORCE" -eq 0 ]; then
@@ -74,11 +76,13 @@ mkdir -p .claude
 cp -R "$SRC/agents" "$SRC/skills" .claude/
 cp "$SRC/CLAUDE.md" ./CLAUDE.md
 
-# Keep only the requested stack's scaffold skill.
+# Keep only the requested stack's scaffold skill (none for custom stacks).
 for dir in .claude/skills/scaffold-*; do
   [ "$(basename "$dir")" = "scaffold-$STACK" ] || rm -rf "$dir"
 done
-[ -d ".claude/skills/scaffold-$STACK" ] || fail "scaffold skill for $STACK missing in $VERSION"
+if [ "$HAS_SCAFFOLD" -eq 1 ] && [ ! -d ".claude/skills/scaffold-$STACK" ]; then
+  fail "scaffold skill for $STACK missing in $VERSION"
+fi
 
 # Seed team/ stubs — never clobber existing project state.
 mkdir -p team
@@ -96,4 +100,7 @@ else
 fi
 
 echo "teamclaude $VERSION installed (stack: $STACK)."
+if [ "$HAS_SCAFFOLD" -eq 0 ]; then
+  echo "note: no scaffold skill for '$STACK' — the architect will derive structure from reference repos."
+fi
 echo "Open Claude Code and say 'new project' to start intake."

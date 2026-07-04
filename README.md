@@ -10,7 +10,7 @@ curl -sL https://raw.githubusercontent.com/jesjugroo/claude-team/main/install.sh
 
 | Flag | Meaning |
 |---|---|
-| `--stack <name>` | Required. `next-convex`, `tauri`, `expo`, or `extension`. Keeps only the matching scaffold skill. |
+| `--stack <name>` | Required. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold — the architect derives structure from reference repos instead. |
 | `--version <tag>` | Team version to install (e.g. `v1.0`). Defaults to the latest tag — never main HEAD. |
 | `--force` | Overwrite an existing `.claude/` directory. |
 
@@ -67,8 +67,10 @@ Releases are annotated git tags (`v1.0`, `v1.1`, …). Every consuming project p
 
 ## Adding a new stack
 
-1. Create `template/skills/scaffold-<name>/SKILL.md` with: setup commands, folder tree, required config, stack-specific standards, and failure classes for the tester.
-2. Add `<name>` to `STACKS` in `install.sh`.
+Any stack already works without a scaffold — the architect derives structure from reference repos. Add a scaffold skill when a stack becomes recurring:
+
+1. Create `template/skills/scaffold-<name>/SKILL.md` with: setup commands, folder tree, structure rules, required config, stack-specific standards, and failure classes for the tester.
+2. Add `<name>` to `SCAFFOLDED_STACKS` in `install.sh`.
 3. Add 2–3 exemplar repos for the stack to `template/skills/reference-library.md`.
 4. Add the stack's CI variation to `template/skills/gh-workflows/SKILL.md`.
 5. Tag a minor release.

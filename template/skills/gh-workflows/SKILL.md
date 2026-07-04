@@ -47,6 +47,10 @@ Stack variations:
 - expo: add `npx expo-doctor`; typecheck via `tsc --noEmit`.
 - tauri: frontend checks as above; add `cargo check` in `src-tauri/` only if Rust code changed.
 - extension: add a production build step (`bun run build`) to catch MV3 manifest errors.
+- any other stack (unity, react-spa, …): same rules, different tools — find the
+  stack's canonical CI actions (e.g. game-ci for Unity), verify and pin their
+  SHAs, cache the stack's package/build artifacts, run whatever the project's
+  real check commands are per team/architecture.md.
 
 ## Branch protection
 

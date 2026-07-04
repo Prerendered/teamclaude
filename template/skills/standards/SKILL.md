@@ -5,6 +5,13 @@ description: Global coding standards — load before writing or reviewing any co
 
 # Global Coding Standards
 
+Scope: §§1–3, 6–9, 11–13, and 15 assume the default TypeScript stack. On any
+stack (Unity/C#, plain React, …) these always apply: §4 Comments, §5 File
+headers (adapt comment syntax), §10 Git, §14 Design principles, §16 Done
+checklist (substitute the stack's own typecheck/lint/test commands). For
+non-TS stacks the architect records the equivalents — naming, lint, test
+runner — in team/architecture.md.
+
 ## 1. TypeScript
 
 Strict config (non-negotiable):

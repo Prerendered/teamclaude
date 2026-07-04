@@ -10,6 +10,10 @@ Rules:
 - Respect the senior-protocol research budget: 2–3 entries per decision.
 - Append process: the Overseer adds discoveries mid-project as new rows with
   date + reason. Never delete a row — mark it `retired: <reason>` instead.
+- Stacks are not limited to the sections below. A project on a stack with no
+  section (unity, react-spa, …): the architect appends a new section with 2–3
+  exemplar repos (big production projects first) marked unvetted, then designs
+  from them.
 
 ## next-convex
 
