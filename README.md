@@ -54,9 +54,9 @@ The main Claude Code session is the **Overseer** — the only process that dispa
 |---|---|---|---|
 | `seer` | plan.md, board-conventions, test-report.md (validate mode) | board.md | writes code; marks Done without evidence |
 | `architect` | plan.md, stack skill, reference-library | architecture.md, scaffold | implements features; skips Decisions section |
-| `dev` | one story, architecture.md, standards | code on feature branch | touches board.md; edits other stories' files |
+| `dev` | one story, architecture.md, standards | code on feature branch | touches board.md; edits other stories' files; writes tests |
 | `reviewer` | diff, standards, architecture.md | review-report.md | implements fixes; reviews own suggestions |
-| `tester` | story criteria, code | tests/, test-report.md, bug cards | fixes code; deletes failing tests |
+| `tester` | story criteria, code | tests/ (all tests, unit + criteria), test-report.md, bug cards | fixes code; deletes failing tests |
 | `cicd` | plan.md, gh-workflows skill | .github/, repo config | touches application code |
 
 ## Versioning

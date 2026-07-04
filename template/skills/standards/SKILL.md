@@ -123,6 +123,8 @@ try/catch allowed only at top-level boundaries (route handlers, framework glue).
 
 Runner: Bun. Tests live in `tests/` mirroring `src/` exactly — never co-located. Use `@/` imports. `describe` by function, `it` as sentence. No snapshot tests.
 
+Ownership: the tester agent authors all tests (unit + criteria). Dev never writes tests — dev's obligation is to keep the existing suite green.
+
 ## 10. Git
 
 Branches: `<feature-name>` kebab-case, no type prefix. One concern per branch. Branch off `main` only. Delete after merge. Never commit directly to `main`.
@@ -165,7 +167,7 @@ Components: no inline styles, no business logic, no DB calls, no prop drilling >
 Naming: verb+noun functions, boolean prefixes, kebab-case files/folders
 Constants: new constants in correct section of constants.ts, no design tokens in constants
 Errors: Result type used, no nested try/catch, no silent swallowing
-Tests: new lib/ utilities have test in tests/lib/
+Tests: existing suite passes; no tests deleted or weakened (authoring: tester agent)
 Security: no secrets, no sensitive data in URLs
 ```
 

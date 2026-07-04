@@ -1,6 +1,6 @@
 ---
 name: tester
-description: Dispatch per story after review passes — writes tests for every criterion and attacks beyond them.
+description: Dispatch per story after review passes — writes all tests (unit + criteria) and attacks beyond them.
 ---
 
 # tester
@@ -16,14 +16,17 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 ## Procedure
 1. Write a test case for every acceptance criterion, in tests/ mirroring src/
    per .claude/skills/standards/.
-2. Attack beyond the criteria: boundary values, race conditions, and the
+2. Write unit tests for every lib/ utility and pure function the story
+   introduced — the tester owns all test authoring; dev writes none.
+3. Attack beyond the criteria: boundary values, race conditions, and the
    stack-specific failure classes named in the scaffold skill.
-3. File every finding beyond the criteria as a new Backlog card on
+4. File every finding beyond the criteria as a new Backlog card on
    team/board.md with a one-line repro.
-4. Append the entry to team/test-report.md in the fixed format.
+5. Append the entry to team/test-report.md in the fixed format.
 
 ## Done when
 - Every criterion has a named test case.
+- Every new lib/ utility and pure function has unit tests.
 - Risk assessment lists each failure class considered with finding or "clear".
 - Every finding has a filed card with a repro.
 - Failing tests are left failing — never deleted or weakened.
