@@ -20,15 +20,23 @@ bun add -D @crxjs/vite-plugin
 │   ├── manifest.ts         # MV3 manifest via crxjs defineManifest
 │   ├── background/         # service worker — event-driven, no state in memory
 │   ├── content/            # content scripts, one folder per script
-│   ├── popup/              # popup UI (React)
+│   ├── popup/              # popup UI (React) — feature-first inside when it grows
 │   ├── options/            # options page if needed
-│   ├── lib/                # shared logic + messaging.ts (typed message bus)
+│   ├── features/           # domain logic shared across contexts, one folder per feature
+│   ├── lib/                # cross-cutting only: result.ts + messaging.ts (typed message bus)
 │   └── constants.ts
 ├── tests/
 ├── tsconfig.json           # strict config from skills/standards
 ├── vite.config.ts
 └── package.json
 ```
+
+## Structure rules
+
+- Extension contexts (`background/`, `content/`, `popup/`, `options/`) are
+  entry points only — domain logic lives in `features/`, imported by whichever
+  context needs it. Never feature → feature internals; promote to `lib/` at
+  3+ uses.
 
 ## Stack-specific standards
 

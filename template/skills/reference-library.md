@@ -15,9 +15,9 @@ Rules:
 
 | Repo | What to learn from it | Status |
 |---|---|---|
+| `alan2207/bulletproof-react` | The feature-first structure our scaffolds follow: features/ ownership, one-way import direction | unvetted — user to confirm |
+| `calcom/cal.com` | Big production Next.js app — how feature-first holds up at scale | unvetted — user to confirm |
 | `get-convex/convex-helpers` | Convex function patterns: validators, custom functions, relationship helpers | unvetted — user to confirm |
-| `get-convex/convex-demos` | Official minimal examples per Convex feature | unvetted — user to confirm |
-| `shadcn-ui/taxonomy` | Next.js App Router + shadcn/ui project structure | unvetted — user to confirm |
 
 ## tauri
 
@@ -30,6 +30,7 @@ Rules:
 
 | Repo | What to learn from it | Status |
 |---|---|---|
+| `bluesky-social/social-app` | Big production Expo/RN app — structure, navigation, state at scale | unvetted — user to confirm |
 | `expo/examples` | Official per-feature Expo examples (incl. SQLite) | unvetted — user to confirm |
 | `infinitered/ignite` | Battle-tested RN/Expo project structure and conventions | unvetted — user to confirm |
 

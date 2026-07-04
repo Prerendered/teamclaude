@@ -94,7 +94,7 @@ Rules:
 - No inline styles — Tailwind only.
 - No magic numbers — `src/constants.ts`.
 - No DB/API calls — through hooks or server actions.
-- No business logic — lives in `lib/` or `convex/`.
+- No business logic — lives in the feature's `lib/`, shared `lib/`, or `convex/`.
 - Props type above component, never inline.
 - Max 150 lines. `'use client'` only when needed.
 - No prop drilling beyond 2 levels.
@@ -150,7 +150,7 @@ No commits to `main` directly. No `any`. No inline styles. No secrets in code. N
 - **Single Responsibility**: One file, one function, one component — one job. Split if you need "and".
 - **Composition over Inheritance**: Compose with hooks and components. Never extend base classes.
 - **Fail Fast**: Validate at the boundary. Zod on all external input. `v.*` on all Convex args. Never `null` to signal failure.
-- **Colocation**: Keep code close to where it's used. Promote to `lib/` at 3+ uses. Duplication is cheaper than the wrong abstraction.
+- **Colocation**: Keep code close to where it's used — new code starts in its feature folder. Promote to shared `lib/` at 3+ feature uses. Duplication is cheaper than the wrong abstraction.
 
 ## 15. Post-change checklist
 
