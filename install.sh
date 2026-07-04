@@ -63,7 +63,7 @@ fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-git clone --quiet --depth 1 --branch "$VERSION" "$REPO_URL" "$TMP/repo" \
+git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$VERSION" "$REPO_URL" "$TMP/repo" \
   || fail "clone of $VERSION failed"
 SRC="$TMP/repo/template"
 [ -d "$SRC" ] || fail "template/ missing in $VERSION — corrupt release?"
