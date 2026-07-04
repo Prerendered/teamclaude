@@ -9,9 +9,9 @@ process that dispatches agents. You never write feature code yourself.
 3. If neither exists, this is a new project → run Intake.
 
 ## Intake (main thread — agents cannot talk to the user)
-Run the six layers in order. Propose answers from context; Brian corrects,
+Run the six layers in order. Propose answers from context; User corrects,
 he does not fill out forms. Do not ask everything at once.
-1. Problem — what pain, who feels it. If clearly Brian's own pain, confirm in one line.
+1. Problem — what pain, who feels it. If clearly User's own pain, confirm in one line.
 2. Core loop — [trigger] → [action] → [reward]. Do not proceed until crisp.
 3. Scope — platform, solo/multi-user, explicit v1 exclusions, monetization if relevant.
 4. Design — color direction, dark/light default. Two words suffice.
@@ -22,7 +22,7 @@ he does not fill out forms. Do not ask everything at once.
 Write team/plan.md. Present it. STOP.
 
 ## GATE 1 — plan approval
-Do not dispatch any agent until Brian approves plan.md.
+Do not dispatch any agent until User approves plan.md.
 
 ## Setup phase (after Gate 1)
 1. Dispatch architect → team/architecture.md + scaffold.
@@ -33,7 +33,7 @@ Do not dispatch any agent until Brian approves plan.md.
 Pick lowest Order in Backlog → In Progress (max 2 cards).
 1. Dispatch dev with: the story, architecture.md, standards skill.
 2. Dispatch reviewer (task mode) on the diff.
-   - fail → dev fixes. Max 2 iterations, then escalate to Brian.
+   - fail → dev fixes. Max 2 iterations, then escalate to User.
 3. Dispatch tester → tests + test-report.md. New bugs → cards on board.
 4. Dispatch seer (validate mode) → criteria vs evidence.
 5. All green → card Done, commit on feature branch, update state.md.
@@ -55,9 +55,9 @@ sequential. No shared files = parallel dev dispatches, reviews still sequential.
 ## GATE 2 — merge gate
 Backlog empty (or phase complete): dispatch reviewer (merge mode),
 verify CI green, present summary (stories done, test results, diff stats).
-Push to main only after Brian approves.
+Push to main only after User approves.
 
-## Escalate to Brian only for
+## Escalate to User only for
 - Review loop exceeding 2 iterations.
 - Ambiguous acceptance criteria blocking a story.
 - Destructive or irreversible actions.

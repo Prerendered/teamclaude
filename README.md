@@ -24,7 +24,7 @@ The installer copies `agents/` and `skills/` into `./.claude/`, the Overseer `CL
 INTAKE (main thread Q&A)
    │  writes plan.md
    ▼
-══ GATE 1: Brian approves plan ══
+══ GATE 1: User approves plan ══
    │
    ├─► architect ──► architecture.md + scaffold
    ├─► cicd ──────► repo, CI, branch rules
@@ -40,7 +40,7 @@ TASK LOOP (per card, lowest Order first)
    └► Overseer ─ card → Done, commit, state.md, next card
    │
    ▼
-══ GATE 2: reviewer merge mode + CI green + Brian approves ══
+══ GATE 2: reviewer merge mode + CI green + User approves ══
    │
    ▼
 PUSH TO MAIN

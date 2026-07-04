@@ -21,4 +21,4 @@ Every artifact with choices carries:
 - chose <X> over <Y, Z> because <reason>  [ref: <link>]
 ```
 
-One line per decision. If it needs a paragraph, it needs Brian.
+One line per decision. If it needs a paragraph, it needs the user.

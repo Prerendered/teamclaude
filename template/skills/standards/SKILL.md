@@ -70,7 +70,7 @@ Comment for: business rule rationale, non-obvious workarounds, external links, T
 
 Never comment: restating the code, self-documenting TS, section dividers inside components.
 
-TODO format: `// TODO(brian): <what and why deferred>` — owner always required.
+TODO format: `// TODO(user): <what and why deferred>` — owner always required.
 
 ## 5. File headers
 
@@ -152,7 +152,7 @@ No commits to `main` directly. No `any`. No inline styles. No secrets in code. N
 
 ## 15. Post-change checklist
 
-Run after every code addition or edit. Fix violations inline — never report and leave for Brian.
+Run after every code addition or edit. Fix violations inline — never report and leave for the user.
 
 **Step 1 — Biome**: `bun run check` — must exit zero errors before self-review.
 
