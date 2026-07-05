@@ -20,21 +20,17 @@ Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
 | `--force` | Overwrite an existing `.claude/` directory. |
 
-> **Private repo:** `bunx`/`npx` fetch through your git auth (SSH key, or a token via
-> `gh`), so this works once your GitHub access is set up. `raw.githubusercontent.com`
-> won't serve private content, so the `curl | bash` one-liner below is public-only.
-
 **Other ways to install**
 
 ```bash
-# clone and run — no bunx needed, works regardless of visibility
+# curl one-liner
+curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash
+
+# clone and run — no network hop
 git clone https://github.com/Prerendered/teamclaude.git
 cd <your-project>
 node ../teamclaude/bin/cli.mjs init
 #   or the bash installer: bash ../teamclaude/install.sh --local
-
-# curl one-liner — public repos only
-curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash
 ```
 
 The bash installer (`install.sh -h`) additionally takes `--version <tag>` and `--local`.
