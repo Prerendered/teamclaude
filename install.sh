@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# teamclaude installer — installs the team template into the current project.
+# teamclaude installer (bash / curl path) — installs the team template.
+# Primary installer is bin/cli.mjs (bunx github:Prerendered/teamclaude init);
+# keep the install logic here in sync with it.
 # Public repo:  curl -sL <raw-url>/install.sh | bash -s -- --stack next-convex
 # Private repo: git clone <repo> && bash teamclaude/install.sh --local --stack next-convex
 set -euo pipefail

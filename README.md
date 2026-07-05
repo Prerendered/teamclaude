@@ -4,45 +4,43 @@ A versioned repo of Claude Code agents, skills, and artifact templates that inst
 
 ## Install
 
-> **`Prerendered/teamclaude` is private.** The `curl | bash` one-liner works only
-> against a *public* repo — `raw.githubusercontent.com` refuses private content. For
-> the private repo, use **clone-and-run** or **gh** below; both install with your own
-> GitHub credentials and never touch anonymous fetch.
-
-**Clone and run** (recommended for a private repo):
+From your project's root:
 
 ```bash
-git clone https://github.com/Prerendered/teamclaude.git
-cd <your-project>
-bash ../teamclaude/install.sh --local --stack next-convex
+bunx github:Prerendered/teamclaude init --stack next-convex
 ```
 
-`--local` installs from the checkout's `template/` instead of cloning — no network hop, so the repo's visibility never matters.
-
-**gh** (private, uses your `gh auth`):
-
-```bash
-gh repo clone Prerendered/teamclaude /tmp/teamclaude -- --depth 1 --branch v1.0 \
-  && (cd <your-project> && bash /tmp/teamclaude/install.sh --local --stack next-convex)
-```
-
-**curl one-liner** (only if the repo is public):
-
-```bash
-curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash -s -- --stack next-convex
-```
+Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
+`npx` works identically. Pin a release with a ref:
+`bunx github:Prerendered/teamclaude#v1.0 init --stack next-convex`.
 
 | Flag | Meaning |
 |---|---|
 | `--stack <name>` | Required. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold — the architect derives structure from reference repos instead. |
-| `--version <tag>` | Team version to install (e.g. `v1.0`). Defaults to the latest tag (or, with `--local`, the checkout's `git describe`) — never main HEAD. |
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
-| `--local` | Install from the `template/` next to the script instead of cloning. Required for a private repo. |
 | `--force` | Overwrite an existing `.claude/` directory. |
 
-Env: `TEAMCLAUDE_REPO` overrides the source repo URL (ignored with `--local`).
+> **Private repo:** `bunx`/`npx` fetch through your git auth (SSH key, or a token via
+> `gh`), so this works once your GitHub access is set up. `raw.githubusercontent.com`
+> won't serve private content, so the `curl | bash` one-liner below is public-only.
 
-The installer copies `agents/` and `skills/` into `./.claude/`, the Overseer `CLAUDE.md` into the repo root, seeds `team/` stubs (never clobbering existing project state), and stamps the installed version into `team/state.md`. Needs git and coreutils (plus curl only for the public one-liner).
+**Other ways to install**
+
+```bash
+# clone and run — no bunx needed, works regardless of visibility
+git clone https://github.com/Prerendered/teamclaude.git
+cd <your-project>
+node ../teamclaude/bin/cli.mjs init --stack next-convex
+#   or the bash installer: bash ../teamclaude/install.sh --local --stack next-convex
+
+# curl one-liner — public repos only
+curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash -s -- --stack next-convex
+```
+
+The bash installer (`install.sh -h`) additionally takes `--version <tag>` and `--local`.
+It copies `agents/` and `skills/` into `./.claude/`, the Overseer `CLAUDE.md` into the
+repo root, seeds `team/` stubs (never clobbering existing project state), and stamps the
+installed version into `team/state.md`.
 
 ## How it works
 
