@@ -5,7 +5,7 @@ A versioned repo of Claude Code agents, skills, and artifact templates that inst
 ## Install
 
 ```bash
-curl -sL https://raw.githubusercontent.com/jesjugroo/claude-team/main/install.sh | bash -s -- --stack next-convex
+curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash -s -- --stack next-convex
 ```
 
 | Flag | Meaning |

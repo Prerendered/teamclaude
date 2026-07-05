@@ -60,7 +60,7 @@ A versioned GitHub repo of Claude Code agents, skills, and artifact templates th
 ### Repo structure (the product itself)
 
 ```
-claude-team/
+teamclaude/
 ├── install.sh
 ├── README.md
 └── template/

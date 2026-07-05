@@ -9,7 +9,7 @@ All 20 stories are currently **Backlog**.
 
 | # | Story | Priority | Notes |
 |---|-------|----------|-------|
-| 1 | As a user, I can create the teamclaude repo with the full template structure | High | GitHub repo `claude-team` with install.sh, README, template/ tree |
+| 1 | As a user, I can create the teamclaude repo with the full template structure | High | GitHub repo `teamclaude` with install.sh, README, template/ tree |
 | 2 | As a user, I can install the team into a new project with one command | High | install.sh — curl \| bash -s -- --stack \<name\> |
 | 3 | As a user, I can pin and re-fetch an exact team version per project | High | git tags + --version flag |
 | 4 | As a user, I can run intake by saying 'new project' and approve the plan at Gate 1 | High | CLAUDE.md intake section — Layers 1–6 in main thread |

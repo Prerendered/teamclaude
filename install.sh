@@ -3,7 +3,7 @@
 # Usage: curl -sL <raw-url>/install.sh | bash -s -- --stack next-convex [--version vX.Y] [--force]
 set -euo pipefail
 
-REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/jesjugroo/claude-team.git}"
+REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/Prerendered/teamclaude.git}"
 SCAFFOLDED_STACKS="next-convex tauri expo extension"
 STACK=""
 VERSION=""
