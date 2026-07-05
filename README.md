@@ -7,16 +7,16 @@ A versioned repo of Claude Code agents, skills, and artifact templates that inst
 From your project's root:
 
 ```bash
-bunx github:Prerendered/teamclaude init --stack next-convex
+bunx github:Prerendered/teamclaude init
 ```
 
 Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
-`npx` works identically. Pin a release with a ref:
-`bunx github:Prerendered/teamclaude#v1.0 init --stack next-convex`.
+The **stack is chosen during intake**, so no flags are needed. `npx` works identically.
+Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
 
 | Flag | Meaning |
 |---|---|
-| `--stack <name>` | Required. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold — the architect derives structure from reference repos instead. |
+| `--stack <name>` | Optional. The stack is normally decided at intake — pass this only to lock it up front. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold. Omit to keep all scaffolds and let intake pick. |
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
 | `--force` | Overwrite an existing `.claude/` directory. |
 
@@ -30,11 +30,11 @@ Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `te
 # clone and run — no bunx needed, works regardless of visibility
 git clone https://github.com/Prerendered/teamclaude.git
 cd <your-project>
-node ../teamclaude/bin/cli.mjs init --stack next-convex
-#   or the bash installer: bash ../teamclaude/install.sh --local --stack next-convex
+node ../teamclaude/bin/cli.mjs init
+#   or the bash installer: bash ../teamclaude/install.sh --local
 
 # curl one-liner — public repos only
-curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash -s -- --stack next-convex
+curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash
 ```
 
 The bash installer (`install.sh -h`) additionally takes `--version <tag>` and `--local`.

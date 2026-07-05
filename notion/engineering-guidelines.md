@@ -53,13 +53,20 @@ description: <when to load this skill>
 <content — tables and code blocks over prose>
 ```
 
-## install.sh standards
+## Installer standards
 
-- `set -euo pipefail` always.
-- Flags: `--stack <name>` (keeps only matching scaffold skill), `--version <tag>` (defaults to latest tag).
-- Idempotent: refuses to overwrite an existing `.claude/` unless `--force`.
-- Stamps installed version into `team/state.md` header.
-- No dependencies beyond git/curl/coreutils — must run on a fresh machine.
+Two entries, kept in sync (they mirror the same copy logic): `bin/cli.mjs` (the
+primary `bunx github:Prerendered/teamclaude init` path, cross-platform Node) and
+`install.sh` (the bash/curl path). Both:
+
+- Take an optional `--stack <name>` (prunes to that scaffold skill; omitted keeps all
+  and lets intake pick), optional `--repertoire <url>`, and `--force`.
+- Are idempotent: refuse to overwrite an existing `.claude/` unless `--force`.
+- Stamp the installed version — plus `stack:`/`repertoire:` when provided — into
+  `team/state.md`; never clobber existing `team/` state.
+- `install.sh` adds `--version <tag>` and `--local` (install from a checkout, no
+  network — required for private repos) and stays `set -euo pipefail`, git/coreutils
+  only.
 
 ## Git conventions
 

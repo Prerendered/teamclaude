@@ -15,11 +15,12 @@ const VERSION = `v${JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'ut
 
 const fail = (msg) => { console.error(`error: ${msg}`); process.exit(1); };
 const usage = () =>
-  `Usage: teamclaude init --stack <name> [--repertoire <url>] [--force]
+  `Usage: teamclaude init [--stack <name>] [--repertoire <url>] [--force]
 
-  --stack <name>      Required. Scaffolded stacks: ${SCAFFOLDED.join(', ')}.
-                      Any other name (unity, react-spa, ...) installs without a
-                      scaffold — the architect derives structure from references.
+  --stack <name>      Optional. The stack is normally chosen at intake; pass it only
+                      to decide up front. Scaffolded: ${SCAFFOLDED.join(', ')}.
+                      Any other name installs without a scaffold. Omit to keep all
+                      scaffold skills and let intake pick.
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo.
   --force             Overwrite an existing .claude/ directory.`;
 
@@ -36,9 +37,6 @@ for (let i = 1; i < argv.length; i++) {
   else if (a === '--force') force = true;
   else fail(`unknown flag: ${a}\n${usage()}`);
 }
-if (!stack) fail(`--stack is required\n${usage()}`);
-
-const hasScaffold = SCAFFOLDED.includes(stack);
 
 // ── install ───────────────────────────────────────────────────────────────────
 if (!existsSync(TEMPLATE)) fail(`template/ missing at ${TEMPLATE} — corrupt package?`);
@@ -58,14 +56,17 @@ const main = async () => {
   await fs.cp(path.join(TEMPLATE, 'skills'), '.claude/skills', { recursive: true });
   await fs.cp(path.join(TEMPLATE, 'CLAUDE.md'), 'CLAUDE.md');
 
-  // keep only the requested stack's scaffold skill.
-  for (const entry of await fs.readdir('.claude/skills')) {
-    if (entry.startsWith('scaffold-') && entry !== `scaffold-${stack}`) {
-      await fs.rm(path.join('.claude/skills', entry), { recursive: true, force: true });
+  // stack chosen up front → prune to its scaffold (custom stack keeps none).
+  // stack omitted → keep all scaffold skills; intake picks later.
+  if (stack) {
+    for (const entry of await fs.readdir('.claude/skills')) {
+      if (entry.startsWith('scaffold-') && entry !== `scaffold-${stack}`) {
+        await fs.rm(path.join('.claude/skills', entry), { recursive: true, force: true });
+      }
     }
-  }
-  if (hasScaffold && !existsSync(path.join('.claude/skills', `scaffold-${stack}`))) {
-    fail(`scaffold skill for ${stack} missing in this version`);
+    if (SCAFFOLDED.includes(stack) && !existsSync(path.join('.claude/skills', `scaffold-${stack}`))) {
+      fail(`scaffold skill for ${stack} missing in this version`);
+    }
   }
 
   // seed team/ stubs — never clobber existing project state.
@@ -75,14 +76,19 @@ const main = async () => {
     if (!existsSync(dest)) await fs.cp(path.join(TEMPLATE, 'team', f), dest);
   }
 
-  // stamp version (and repertoire URL) into team/state.md.
+  // stamp version (and stack / repertoire when set) into team/state.md.
   let state = await fs.readFile('team/state.md', 'utf8');
   state = upsert(state, 'team-version', VERSION);
+  if (stack) state = upsert(state, 'stack', stack);
   if (repertoire) state = upsert(state, 'repertoire', repertoire);
   await fs.writeFile('team/state.md', state);
 
-  console.log(`teamclaude ${VERSION} installed (stack: ${stack}).`);
-  if (!hasScaffold) console.log(`note: no scaffold skill for '${stack}' — the architect will derive structure from reference repos.`);
+  if (stack) {
+    console.log(`teamclaude ${VERSION} installed (stack: ${stack}).`);
+    if (!SCAFFOLDED.includes(stack)) console.log(`note: no scaffold skill for '${stack}' — the architect will derive structure from reference repos.`);
+  } else {
+    console.log(`teamclaude ${VERSION} installed. Stack: chosen at intake (all scaffold skills kept).`);
+  }
   if (repertoire) console.log(`repertoire: ${repertoire} — consulted at intake, saved at wrap.`);
   console.log("Open Claude Code and say 'new project' to start intake.");
 };

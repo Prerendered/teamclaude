@@ -48,7 +48,7 @@ A versioned GitHub repo of Claude Code agents, skills, and artifact templates th
 
 ## MVP Success Metrics
 
-- One command installs the full team into a fresh project (`curl … | bash -s -- --stack next-convex`).
+- One command installs the full team into a project (`bunx github:Prerendered/teamclaude init`).
 - A pilot project goes intake → merged main with ≤3 unplanned interruptions.
 - Every architecture decision in the pilot has a recorded rationale with rejected alternatives.
 - Zero standards duplicated between agent files and skills.

@@ -2,8 +2,9 @@
 # teamclaude installer (bash / curl path) — installs the team template.
 # Primary installer is bin/cli.mjs (bunx github:Prerendered/teamclaude init);
 # keep the install logic here in sync with it.
-# Public repo:  curl -sL <raw-url>/install.sh | bash -s -- --stack next-convex
-# Private repo: git clone <repo> && bash teamclaude/install.sh --local --stack next-convex
+# Public repo:  curl -sL <raw-url>/install.sh | bash -s --
+# Private repo: git clone <repo> && bash teamclaude/install.sh --local
+# --stack is optional; the stack is normally chosen at intake.
 set -euo pipefail
 
 REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/Prerendered/teamclaude.git}"
@@ -16,13 +17,14 @@ LOCAL=0
 
 usage() {
   cat <<EOF
-Usage: install.sh --stack <name> [--version <tag>] [--repertoire <url>] [--local] [--force]
+Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--local] [--force]
 
 Flags:
-  --stack <name>      Required. Stacks with a scaffold skill:
+  --stack <name>      Optional. The stack is normally chosen at intake; pass it only
+                      to decide up front. Stacks with a scaffold skill:
                       ${SCAFFOLDED_STACKS// /, }.
-                      Any other name (unity, react-spa, ...) installs without a
-                      scaffold — the architect derives structure from references.
+                      Any other name installs without a scaffold. Omit to keep all
+                      scaffold skills and let intake pick.
   --version <tag>     Team version to install (git tag, e.g. v1.0).
                       Defaults to the latest tag — never main HEAD.
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo. When
@@ -52,11 +54,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ -z "$STACK" ]; then usage >&2; fail "--stack is required"; fi
 HAS_SCAFFOLD=0
-case " $SCAFFOLDED_STACKS " in
-  *" $STACK "*) HAS_SCAFFOLD=1 ;;
-esac
+if [ -n "$STACK" ]; then
+  case " $SCAFFOLDED_STACKS " in
+    *" $STACK "*) HAS_SCAFFOLD=1 ;;
+  esac
+fi
 
 if [ -d .claude ] && [ "$FORCE" -eq 0 ]; then
   fail ".claude/ already exists — re-run with --force to overwrite"
@@ -99,12 +102,15 @@ mkdir -p .claude
 cp -R "$SRC/agents" "$SRC/skills" .claude/
 cp "$SRC/CLAUDE.md" ./CLAUDE.md
 
-# Keep only the requested stack's scaffold skill (none for custom stacks).
-for dir in .claude/skills/scaffold-*; do
-  [ "$(basename "$dir")" = "scaffold-$STACK" ] || rm -rf "$dir"
-done
-if [ "$HAS_SCAFFOLD" -eq 1 ] && [ ! -d ".claude/skills/scaffold-$STACK" ]; then
-  fail "scaffold skill for $STACK missing in $VERSION"
+# Stack chosen up front → keep only its scaffold skill (none for custom stacks).
+# Stack omitted → keep all scaffold skills; intake picks later.
+if [ -n "$STACK" ]; then
+  for dir in .claude/skills/scaffold-*; do
+    [ "$(basename "$dir")" = "scaffold-$STACK" ] || rm -rf "$dir"
+  done
+  if [ "$HAS_SCAFFOLD" -eq 1 ] && [ ! -d ".claude/skills/scaffold-$STACK" ]; then
+    fail "scaffold skill for $STACK missing in $VERSION"
+  fi
 fi
 
 # Seed team/ stubs — never clobber existing project state.
@@ -122,6 +128,16 @@ else
   printf 'team-version: %s\n%s\n' "$VERSION" "$(cat team/state.md)" > team/state.md
 fi
 
+# Stamp the chosen stack into team/state.md when provided (intake honors it).
+if [ -n "$STACK" ]; then
+  if grep -q '^stack:' team/state.md; then
+    sed -i.bak "s|^stack:.*|stack: $STACK|" team/state.md
+    rm -f team/state.md.bak
+  else
+    printf 'stack: %s\n%s\n' "$STACK" "$(cat team/state.md)" > team/state.md
+  fi
+fi
+
 # Stamp the repertoire URL into team/state.md when provided.
 if [ -n "$REPERTOIRE" ]; then
   if grep -q '^repertoire:' team/state.md; then
@@ -132,9 +148,13 @@ if [ -n "$REPERTOIRE" ]; then
   fi
 fi
 
-echo "teamclaude $VERSION installed (stack: $STACK)."
-if [ "$HAS_SCAFFOLD" -eq 0 ]; then
-  echo "note: no scaffold skill for '$STACK' — the architect will derive structure from reference repos."
+if [ -z "$STACK" ]; then
+  echo "teamclaude $VERSION installed. Stack: chosen at intake (all scaffold skills kept)."
+else
+  echo "teamclaude $VERSION installed (stack: $STACK)."
+  if [ "$HAS_SCAFFOLD" -eq 0 ]; then
+    echo "note: no scaffold skill for '$STACK' — the architect will derive structure from reference repos."
+  fi
 fi
 if [ -n "$REPERTOIRE" ]; then
   echo "repertoire: $REPERTOIRE — consulted at intake, saved at wrap."

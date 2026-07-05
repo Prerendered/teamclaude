@@ -18,7 +18,9 @@ he does not fill out forms. Do not ask everything at once.
 2. Core loop — [trigger] → [action] → [reward]. Do not proceed until crisp.
 3. Scope — platform, solo/multi-user, explicit v1 exclusions, monetization if relevant.
 4. Design — color direction, dark/light default. Two words suffice.
-5. Stack — default Next.js + Convex + shadcn/ui + Tailwind + Bun.
+5. Stack — if team/state.md has a `stack:` line, it was chosen at install:
+   confirm it in one line, do not re-derive. Otherwise decide here.
+   Default Next.js + Convex + shadcn/ui + Tailwind + Bun.
    Deviations: offline-first → SQLite; extension → Vite + React + MV3;
    desktop → Tauri; multi-target → Bun workspaces.
    Not limited to these — Unity, plain React, anything the project needs.
