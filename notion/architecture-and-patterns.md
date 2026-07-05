@@ -5,29 +5,39 @@
 ## Workflow state machine
 
 ```
-INTAKE (main thread Q&A)
-   │  writes plan.md
-   ▼
-══ GATE 1: Brian approves plan ══
+ENTRY
+  greenfield ─► INTAKE (main thread Q&A) ──────────────► writes plan.md
+  brownfield ─► ONBOARDING ─► scout ─► architecture.md + map.md ─► change plan
    │
-   ├─► architect ──► architecture.md + scaffold
+   ▼
+══ GATE 1: User approves plan ══
+   │
+   ├─► architect ──► architecture.md + scaffold   (greenfield)
    ├─► cicd ──────► repo, CI, branch rules
+   ├─► designer ──► design.md + tokens            (UI stacks)
    └─► seer ──────► board.md (stories, criteria, order)
    │
    ▼
 TASK LOOP (per card, lowest Order first)
    │
-   ├► dev ────── implements on feature branch
-   ├► reviewer ─ task mode ── fail ─► dev (max 2 loops → escalate)
+   ├► scout ──── brief mode: recon for unfamiliar code (on demand)
+   ├► dev ────── feature card: implements on feature branch
+   ├► refactor ─ refactor card: behavior-preserving, tests green before+after
+   ├► reviewer ─ task mode ── fail ─► builder (max 2 loops → escalate)
+   ├► security ─ security-sensitive card: card-mode review
    ├► tester ─── tests + report ── bugs → new cards
    ├► seer ───── validates criteria vs evidence
    └► Overseer ─ card → Done, commit, state.md, next card
    │
    ▼
-══ GATE 2: reviewer merge mode + CI green + Brian approves ══
+══ GATE 2: reviewer merge + security merge + scribe docs + CI green + User approves ══
    │
    ▼
 PUSH TO MAIN
+   │
+   ▼
+PROJECT WRAP (if a repertoire is configured)
+   └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
 ## Agent contracts
@@ -36,10 +46,16 @@ PUSH TO MAIN
 |---|---|---|---|
 | `seer` | plan.md, board-conventions, test-report.md (validate mode) | board.md | writes code; marks Done without evidence |
 | `architect` | plan.md, stack skill, reference-library | architecture.md, scaffold | implements features; skips Decisions section |
-| `dev` | one story, architecture.md, standards | code on feature branch | touches board.md; edits other stories' files |
+| `scout` | existing codebase, codebase-survey, standards | architecture.md, map.md, recon briefs | writes code; invents structure the code lacks |
+| `dev` | one story, architecture.md, design.md, standards | code on feature branch | touches board.md; edits other stories' files; writes tests |
+| `refactor` | refactor card, target code, map.md, refactor-catalog, standards | refactored code on a branch | changes behavior; adds features; edits tests; refactors untested code |
 | `reviewer` | diff, standards, architecture.md | review-report.md | implements fixes; reviews own suggestions |
+| `security` | diff/branch, security-standards, architecture.md | security-report.md | implements fixes; passes without a dep check |
+| `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
 | `tester` | story criteria, code | tests/, test-report.md, bug cards | fixes code; deletes failing tests |
+| `scribe` | finished code, architecture.md, board.md | README.md, docs/ | changes code; documents unbuilt features |
 | `cicd` | plan.md, gh-workflows skill | .github/, repo config | touches application code |
+| `archivist` | team/ artifacts, state.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
 
 ## Senior behaviors per agent
 
@@ -47,10 +63,16 @@ PUSH TO MAIN
 |---|---|
 | `seer` | Challenges the plan: unstated edge cases, comparable-product checks, adds non-functional stories (error/empty/loading states) |
 | `architect` | Pulls structure from 2–3 reference repos in the same stack, compares against scaffold skill, records every deviation with reason |
+| `scout` | Reads what the code *is*, not what it should be; every inferred convention cites a file; standards drift becomes candidate refactor cards |
 | `dev` | Verifies current API signatures in official docs for every library touched; matches existing codebase idioms before inventing new ones |
+| `refactor` | Never touches code without a passing test; same suite green before and after; one concern per branch; no new patterns |
 | `reviewer` | Checklist + design review (coupling, naming, 3-month test); every violation cites a rule, tagged blocker / should-fix / nit |
+| `security` | Walks every checklist class; each finding names code, exploit path, and fix with a severity; audits dependencies in merge mode |
+| `designer` | Extracts existing design language before proposing (brownfield); validates contrast in both themes; every token choice has a rationale |
 | `tester` | Beyond criteria: boundary values, race conditions, stack-specific failure classes; every finding filed as a card with repro |
+| `scribe` | Documents only what is Done on the board; verifies every API signature against source, never memory |
 | `cicd` | Verifies current action versions, pins SHAs, adds caching, matches CI to what the project actually uses |
+| `archivist` | Distils from artifacts only, never invents; proposes an existing category before a new one; self-scans for secrets and gets approval before an external push |
 
 ## Patterns
 
@@ -77,7 +99,7 @@ Rule: reviewer must tag severity; dev fixes blockers first. Two failed cycles me
 
 ### Parallel dispatch
 
-Rule: Overseer checks the file footprint in each story's Notes before parallelizing. Shared file = sequential. No shared files = parallel dev dispatches, reviews still sequential.
+Rule: Overseer checks the file footprint in each story's Notes before parallelizing. Shared file = sequential. No shared files = parallel builder dispatches, reviews still sequential.
 
 ### Decisions block (ADR-lite)
 
@@ -88,7 +110,7 @@ Every artifact with choices carries:
 - chose <X> over <Y, Z> because <reason>  [ref: <link>]
 ```
 
-Rule: one line per decision. If it needs a paragraph, it needs Brian.
+Rule: one line per decision. If it needs a paragraph, it needs the User.
 
 ### Escalation format
 

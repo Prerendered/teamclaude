@@ -8,19 +8,23 @@ SCAFFOLDED_STACKS="next-convex tauri expo extension"
 STACK=""
 VERSION=""
 FORCE=0
+REPERTOIRE=""
 
 usage() {
   cat <<EOF
-Usage: install.sh --stack <name> [--version <tag>] [--force]
+Usage: install.sh --stack <name> [--version <tag>] [--repertoire <url>] [--force]
 
 Flags:
-  --stack <name>    Required. Stacks with a scaffold skill:
-                    ${SCAFFOLDED_STACKS// /, }.
-                    Any other name (unity, react-spa, ...) installs without a
-                    scaffold — the architect derives structure from references.
-  --version <tag>   Team version to install (git tag, e.g. v1.0).
-                    Defaults to the latest tag — never main HEAD.
-  --force           Overwrite an existing .claude/ directory.
+  --stack <name>      Required. Stacks with a scaffold skill:
+                      ${SCAFFOLDED_STACKS// /, }.
+                      Any other name (unity, react-spa, ...) installs without a
+                      scaffold — the architect derives structure from references.
+  --version <tag>     Team version to install (git tag, e.g. v1.0).
+                      Defaults to the latest tag — never main HEAD.
+  --repertoire <url>  Optional. Git URL of a cross-project repertoire repo. When
+                      set, the team consults past projects at intake and saves
+                      this one at wrap. Omit to disable the feature.
+  --force             Overwrite an existing .claude/ directory.
 
 Env:
   TEAMCLAUDE_REPO   Override the source repo URL.
@@ -31,9 +35,10 @@ fail() { echo "error: $*" >&2; exit 1; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --stack)   STACK="${2:-}"; shift 2 ;;
-    --version) VERSION="${2:-}"; shift 2 ;;
-    --force)   FORCE=1; shift ;;
+    --stack)      STACK="${2:-}"; shift 2 ;;
+    --version)    VERSION="${2:-}"; shift 2 ;;
+    --repertoire) REPERTOIRE="${2:-}"; shift 2 ;;
+    --force)      FORCE=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "unknown flag: $1" ;;
   esac
@@ -99,8 +104,21 @@ else
   printf 'team-version: %s\n%s\n' "$VERSION" "$(cat team/state.md)" > team/state.md
 fi
 
+# Stamp the repertoire URL into team/state.md when provided.
+if [ -n "$REPERTOIRE" ]; then
+  if grep -q '^repertoire:' team/state.md; then
+    sed -i.bak "s|^repertoire:.*|repertoire: $REPERTOIRE|" team/state.md
+    rm -f team/state.md.bak
+  else
+    printf 'repertoire: %s\n%s\n' "$REPERTOIRE" "$(cat team/state.md)" > team/state.md
+  fi
+fi
+
 echo "teamclaude $VERSION installed (stack: $STACK)."
 if [ "$HAS_SCAFFOLD" -eq 0 ]; then
   echo "note: no scaffold skill for '$STACK' — the architect will derive structure from reference repos."
+fi
+if [ -n "$REPERTOIRE" ]; then
+  echo "repertoire: $REPERTOIRE — consulted at intake, saved at wrap."
 fi
 echo "Open Claude Code and say 'new project' to start intake."

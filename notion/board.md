@@ -146,7 +146,7 @@ All 20 stories are currently **Backlog**.
 
 ### 16. Vetted reference library
 - 2–3 exemplar repos listed per stack with a one-line 'what to learn from it'
-- Initial entries marked 'unvetted — Brian to confirm'
+- Initial entries marked 'unvetted — User to confirm'
 - Append process defined: Overseer adds discoveries mid-project with date + reason
 - Agents instructed to prefer library entries over web search results
 

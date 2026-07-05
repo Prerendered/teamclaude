@@ -58,6 +58,38 @@ Status: Backlog / In Progress / In Review / Done. Order = the `#` column, depend
 - <bug card # + one-line repro>
 ```
 
+### team/map.md (brownfield)
+
+Written by scout in onboarding — the reverse-engineered map of an existing codebase. Describes what the code **is**; aspirations become refactor cards, not map entries.
+
+```markdown
+# Codebase map — [Project]
+## Entry points
+## Build & run
+## Modules
+## Conventions in force
+## Danger zones
+```
+
+### team/design.md (UI stacks)
+
+Written by designer in setup. Dev builds against it; tokens live in the theme config, never `constants.ts`.
+
+```markdown
+# Design system — [Project]
+## Tokens        (color roles light+dark, type scale, spacing, radii, elevation)
+## Components     (each with the full state matrix)
+## Accessibility floor
+## Decisions
+```
+
+### team/security-report.md (append-only log)
+
+```markdown
+## [date] — [story|branch] — [card|merge] — PASS|FAIL
+- [critical|high|medium|low] <vuln> @ <file:line> — exploit: <how> — fix: <suggestion>
+```
+
 ### team/state.md
 
 Same template as the Operating Manual (current phase, last worked on, in progress, up next, blockers, files touched) plus a header line: `team-version: vX.Y`.
