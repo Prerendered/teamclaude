@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # teamclaude installer — installs the team template into the current project.
-# Usage: curl -sL <raw-url>/install.sh | bash -s -- --stack next-convex [--version vX.Y] [--force]
+# Public repo:  curl -sL <raw-url>/install.sh | bash -s -- --stack next-convex
+# Private repo: git clone <repo> && bash teamclaude/install.sh --local --stack next-convex
 set -euo pipefail
 
 REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/Prerendered/teamclaude.git}"
@@ -9,10 +10,11 @@ STACK=""
 VERSION=""
 FORCE=0
 REPERTOIRE=""
+LOCAL=0
 
 usage() {
   cat <<EOF
-Usage: install.sh --stack <name> [--version <tag>] [--repertoire <url>] [--force]
+Usage: install.sh --stack <name> [--version <tag>] [--repertoire <url>] [--local] [--force]
 
 Flags:
   --stack <name>      Required. Stacks with a scaffold skill:
@@ -24,10 +26,13 @@ Flags:
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo. When
                       set, the team consults past projects at intake and saves
                       this one at wrap. Omit to disable the feature.
+  --local             Install from the template/ next to this script instead of
+                      cloning. Use when running from a checkout — required for
+                      private repos, where raw/anonymous fetch does not work.
   --force             Overwrite an existing .claude/ directory.
 
 Env:
-  TEAMCLAUDE_REPO   Override the source repo URL.
+  TEAMCLAUDE_REPO   Override the source repo URL (ignored with --local).
 EOF
 }
 
@@ -38,6 +43,7 @@ while [ $# -gt 0 ]; do
     --stack)      STACK="${2:-}"; shift 2 ;;
     --version)    VERSION="${2:-}"; shift 2 ;;
     --repertoire) REPERTOIRE="${2:-}"; shift 2 ;;
+    --local)      LOCAL=1; shift ;;
     --force)      FORCE=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "unknown flag: $1" ;;
@@ -56,24 +62,34 @@ fi
 
 command -v git >/dev/null 2>&1 || fail "git is required"
 
-# Resolve version against release tags.
-TAGS="$(git ls-remote --tags --refs "$REPO_URL" 2>/dev/null | sed 's|.*refs/tags/||' | sort -V)" \
-  || fail "cannot reach $REPO_URL"
-[ -n "$TAGS" ] || fail "no release tags found at $REPO_URL"
+if [ "$LOCAL" -eq 1 ]; then
+  # Install from the checkout this script lives in — no network, works for private repos.
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  SRC="$SCRIPT_DIR/template"
+  [ -d "$SRC" ] || fail "--local: no template/ next to install.sh ($SRC) — run from a teamclaude checkout"
+  if [ -z "$VERSION" ]; then
+    VERSION="$(git -C "$SCRIPT_DIR" describe --tags --always 2>/dev/null || echo local)"
+  fi
+else
+  # Resolve version against release tags, then clone the pinned tag.
+  TAGS="$(git ls-remote --tags --refs "$REPO_URL" 2>/dev/null | sed 's|.*refs/tags/||' | sort -V)" \
+    || fail "cannot reach $REPO_URL"
+  [ -n "$TAGS" ] || fail "no release tags found at $REPO_URL"
 
-if [ -z "$VERSION" ]; then
-  VERSION="$(printf '%s\n' "$TAGS" | tail -n 1)"
-elif ! printf '%s\n' "$TAGS" | grep -qx "$VERSION"; then
-  fail "unknown version: $VERSION — available tags: $(printf '%s' "$TAGS" | tr '\n' ' ')"
+  if [ -z "$VERSION" ]; then
+    VERSION="$(printf '%s\n' "$TAGS" | tail -n 1)"
+  elif ! printf '%s\n' "$TAGS" | grep -qx "$VERSION"; then
+    fail "unknown version: $VERSION — available tags: $(printf '%s' "$TAGS" | tr '\n' ' ')"
+  fi
+
+  TMP="$(mktemp -d)"
+  trap 'rm -rf "$TMP"' EXIT
+
+  git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$VERSION" "$REPO_URL" "$TMP/repo" \
+    || fail "clone of $VERSION failed"
+  SRC="$TMP/repo/template"
+  [ -d "$SRC" ] || fail "template/ missing in $VERSION — corrupt release?"
 fi
-
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
-
-git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$VERSION" "$REPO_URL" "$TMP/repo" \
-  || fail "clone of $VERSION failed"
-SRC="$TMP/repo/template"
-[ -d "$SRC" ] || fail "template/ missing in $VERSION — corrupt release?"
 
 # Install agents + skills into .claude/, Overseer into repo root.
 rm -rf .claude
