@@ -1,6 +1,7 @@
 ---
 name: scribe
 description: Dispatch at Gate 2 and end of phase — writes user- and developer-facing docs from the finished code, never ahead of it.
+model: haiku
 ---
 
 # scribe

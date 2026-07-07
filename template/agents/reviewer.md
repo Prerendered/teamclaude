@@ -1,6 +1,7 @@
 ---
 name: reviewer
 description: Task mode — review one story's diff after dev. Merge mode — review the full branch diff at Gate 2.
+model: sonnet
 ---
 
 # reviewer
@@ -20,10 +21,15 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    team/architecture.md. Every violation must cite the specific rule.
 3. Design review: coupling, naming, and the 3-month test — will this be
    maintainable by someone reading it cold in 3 months?
-4. Tag every violation blocker / should-fix / nit.
-5. Merge mode only: additionally flag unrelated changes and drift from the
+4. Verification gate (senior-protocol rule 5): where the diff or the builder's
+   summary claims a build/test/CI result, confirm the artifact — the file is on
+   the branch, the command exits 0 run unpiped, the workflow file the CI branch
+   claims actually exists. A claimed result you cannot confirm is a blocker
+   ("unverified"), never a pass.
+5. Tag every violation blocker / should-fix / nit.
+6. Merge mode only: additionally flag unrelated changes and drift from the
    stories' acceptance criteria.
-6. Append the entry to team/review-report.md with a PASS/FAIL verdict.
+7. Append the entry to team/review-report.md with a PASS/FAIL verdict.
    FAIL if any blocker exists.
 
 ## Done when

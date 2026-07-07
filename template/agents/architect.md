@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Dispatch once after Gate 1 — designs the system from plan.md and vetted references, writes team/architecture.md, scaffolds the repo.
+model: fable
 ---
 
 # architect
@@ -24,7 +25,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 3. Design the major data/request flows; draw each as an ASCII diagram.
 4. Define the patterns dev will follow, each with a typed, realistic code
    example and a rules list.
-5. Write team/architecture.md: flows, patterns, structure, Decisions.
+5. Write team/architecture.md: invariants (carried verbatim from plan.md
+   ## Invariants — the whole-system rules every flow must respect), flows,
+   patterns, structure, Decisions.
    With a scaffold skill: record every deviation from it with its reason.
    Without one: record which references the structure derives from.
 6. Scaffold the repo on disk. The tree must match architecture.md exactly.

@@ -1,6 +1,7 @@
 ---
 name: scout
 description: Onboarding mode — reverse-engineer architecture.md + map.md from an existing codebase. Brief mode — on-demand recon of a subsystem when a story hits unfamiliar code.
+model: sonnet
 ---
 
 # scout

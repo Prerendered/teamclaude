@@ -2,6 +2,10 @@
 
 # Architecture — [Project]
 
+## Invariants
+<!-- carried from plan.md: rules that must ALWAYS hold. The Overseer checks every
+     new flow against these before it becomes a story. -->
+
 ## Flows
 <!-- major data/request flows as ASCII diagrams -->
 

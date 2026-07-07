@@ -1,6 +1,7 @@
 ---
 name: archivist
 description: Dispatch at project wrap after the merge — distills the finished project into a repertoire entry and pushes it to the repertoire repo for future projects to reuse.
+model: haiku
 ---
 
 # archivist

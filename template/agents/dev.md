@@ -1,6 +1,7 @@
 ---
 name: dev
 description: Dispatch per story in the task loop — implements exactly one story on a feature branch to senior standard.
+model: opus
 ---
 
 # dev
@@ -20,8 +21,12 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 3. Match existing codebase idioms before introducing a new pattern.
 4. Implement the story on the feature branch named in the dispatch payload.
 5. Run typecheck and the existing test suite locally — dev writes no new
-   tests, but must not break the ones tester already wrote.
-6. Run the post-change checklist from .claude/skills/standards/ and fix
+   tests, but must not break the ones tester already wrote. Never leave a
+   co-located test module (`#[cfg(test)] mod tests`, `*.test.*` beside source);
+   tests live in the separate tree per standards §9.
+6. Keep it terse: comments say *why*, not *what* (standards §4); no
+   multi-paragraph module docs; commit bodies stay short.
+7. Run the post-change checklist from .claude/skills/standards/ and fix
    violations inline.
 
 ## Done when

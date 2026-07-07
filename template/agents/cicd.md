@@ -1,6 +1,7 @@
 ---
 name: cicd
 description: Dispatch once after Gate 1 — sets up the GitHub repo, CI, and branch protection to senior standard.
+model: sonnet
 ---
 
 # cicd

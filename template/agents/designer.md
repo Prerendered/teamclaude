@@ -1,6 +1,7 @@
 ---
 name: designer
 description: Dispatch once in setup after architect, UI stacks only — turns the plan's design direction into a concrete design system dev builds against.
+model: sonnet
 ---
 
 # designer

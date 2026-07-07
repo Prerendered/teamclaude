@@ -1,6 +1,7 @@
 ---
 name: seer
 description: Story mode — turn team/plan.md into an ordered board after Gate 1. Validate mode — check a completed story's criteria against test evidence.
+model: sonnet
 ---
 
 # seer

@@ -1,6 +1,7 @@
 ---
 name: refactor
 description: Dispatch per refactor card in the task loop — improves existing code to standard without changing behavior, proven by tests green before and after.
+model: sonnet
 ---
 
 # refactor
@@ -22,7 +23,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    Match the idioms in team/map.md; never introduce a new pattern.
 4. Run the suite after every move. A behavior change means the refactor is wrong,
    not the test — revert and reconsider.
-5. Run the post-change checklist from .claude/skills/standards/; fix violations
+5. Keep it terse: comments say *why*, not *what* (standards §4); no
+   multi-paragraph module docs; commit bodies stay short. Leave no co-located
+   test module — tests stay in the separate tree per standards §9.
+6. Run the post-change checklist from .claude/skills/standards/; fix violations
    inline.
 
 ## Done when

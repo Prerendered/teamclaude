@@ -5,6 +5,14 @@ description: Global coding standards — load before writing or reviewing any co
 
 # Global Coding Standards
 
+## 0. Precedence
+
+This skill outranks repo precedent. When existing code contradicts a rule here,
+follow the rule or ask the Overseer — never silently copy the existing pattern
+because "that's how the repo does it". Inheriting debt is a deviation, and a
+deviation needs a recorded reason (senior-protocol rule 4). This applies to test
+location, comment style, and everything below.
+
 Scope: §§1–3, 6–9, 11–13, and 15 assume the default TypeScript stack. On any
 stack (Unity/C#, plain React, …) these always apply: §4 Comments, §5 File
 headers (adapt comment syntax), §10 Git, §14 Design principles, §16 Done
@@ -77,6 +85,8 @@ Comment for: business rule rationale, non-obvious workarounds, external links, T
 
 Never comment: restating the code, self-documenting TS, section dividers inside components.
 
+Keep them short. One or two lines. No multi-paragraph module docs or block banners — a comment that runs to a paragraph is a design smell: split the code or move the rationale to the Decisions block. The header in §5 is the only structured doc a file carries.
+
 TODO format: `// TODO(user): <what and why deferred>` — owner always required.
 
 ## 5. File headers
@@ -130,6 +140,8 @@ try/catch allowed only at top-level boundaries (route handlers, framework glue).
 
 Runner: Bun. Tests live in `tests/` mirroring `src/` exactly — never co-located. Use `@/` imports. `describe` by function, `it` as sentence. No snapshot tests.
 
+Separate test tree on **every** stack (not just TS) — this rule survives repo precedent (§0). A separate file/dir, never inline with source: no Rust `#[cfg(test)] mod tests` in the source file, no `Component.test.tsx` beside the component. The architect records the stack's separate-tree convention (e.g. Rust `tests/` integration crate, or a dedicated `*_test` module tree) in team/architecture.md; if the ecosystem's idiom is genuinely inline, that is a deviation with a recorded reason, not a default.
+
 Ownership: the tester agent authors all tests (unit + criteria). Dev never writes tests — dev's obligation is to keep the existing suite green.
 
 ## 10. Git
@@ -137,6 +149,8 @@ Ownership: the tester agent authors all tests (unit + criteria). Dev never write
 Branches: `<feature-name>` kebab-case, no type prefix. One concern per branch. Branch off `main` only. Delete after merge. Never commit directly to `main`.
 
 Commits: `<type>: <description>` — imperative, lowercase, no period. Squash merge to `main`. PRs require passing typecheck + tests.
+
+Commit body: terse. The subject line alone is enough for most commits; add a body only to record *why* a non-obvious change was made, in one or two lines — never a multi-paragraph changelog restating the diff.
 
 ## 11. Path aliases
 

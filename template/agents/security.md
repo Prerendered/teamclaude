@@ -1,6 +1,7 @@
 ---
 name: security
 description: Card mode — security review of a security-sensitive story's diff. Merge mode — full-branch security pass plus dependency audit at Gate 2.
+model: sonnet
 ---
 
 # security
