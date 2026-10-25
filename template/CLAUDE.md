@@ -87,20 +87,30 @@ mix of feature and refactor cards).
 ## Delivery loop (repeat until every feature is Accepted)
 Pick → Story loop per card → Feature acceptance → next feature.
 
-### Pick — one feature at a time
+### Pick — one feature at a time, every ready story at once
 The current feature is the first one on board.md's Features table not yet Accepted.
-Pick the next card (max 2 In Progress across both boards):
-1. An Open critical/high bug on bug-board.md — something merged is broken, and
+WIP cap: `wip:` in team/state.md (default 4) cards in flight across both boards —
+In Progress plus In Review. Fill every free slot, in this order:
+1. Open critical/high bugs on bug-board.md — something merged is broken, and
    building on it compounds the damage.
-2. Otherwise the lowest # in Backlog *of the current feature*. Never start a later
-   feature's story while the current one has Backlog left — a finished feature is
-   what the User can test, and that feedback steers the next one.
-3. Open medium/low bugs are worked once the current feature's stories are merged,
-   before Feature acceptance.
-Then: run the Invariant check on the card's flow, size its ceremony
-(Proportionality), create its worktree (Dispatch rules), and move the row to
-In Progress. Record the feature's start commit (`git rev-parse origin/main`) in
-state.md when its first story is picked.
+2. **Ready stories** of the current feature, lowest # first. Ready = every story in
+   its `Needs` is Done (merged), and its Files share nothing with any card in
+   flight. Never start a later feature's story while the current one has Backlog
+   left — a finished feature is what the User can test, and that feedback steers
+   the next one.
+3. Open medium/low bugs, once the current feature's stories are merged, before
+   Feature acceptance.
+A Backlog story that is not ready waits; it is never forced in by order alone.
+Per picked card: run the Invariant check on its flow, size its ceremony
+(Proportionality), create its worktrees (Dispatch rules), and move the row to
+In Progress. Then dispatch all picked cards together — each as a background
+agent; handle each one's return as it lands.
+
+**Feature start.** When a feature's first card is picked: record its start commit
+(`git rev-parse origin/main`) in state.md, and dispatch planner (plan mode) for
+**every** story of the feature at once — plans only read code, so they never
+conflict, and dev never waits on a planner later. Scout briefs for stories in
+unfamiliar code go first, in parallel.
 
 ### Proportionality — scale ceremony to blast radius
 Size after picking, never instead of it. The full Story loop is for cards with
@@ -118,12 +128,19 @@ Every FAIL routes back to dev. The first return re-dispatches dev on opus (Model
 tiers); more than 2 returns from the same step → escalate to User.
 1. **Story** — the card as seer wrote it: ID, criteria, Files. Ambiguous criteria
    → escalate.
-2. **Plan** — dispatch planner → team/plans/US-<n>.md. Story in unfamiliar code →
-   dispatch scout (brief mode) first and pass its brief to the planner. Refactor
-   card → skip; the refactor agent plans its own moves (characterization tests from
-   tester first if the target has no passing test).
-3. **Build** — dispatch dev (refactor card → refactor) with the plan. It commits on
-   the story branch in the worktree and pushes. Row → In Review.
+2. **Plan** — already written at Feature start. Freshness check before building:
+   `git diff --name-only <plan Base>..origin/main` touches any file in the plan's
+   Files, or a story in its Needs got a Contract Amendment → dispatch planner
+   (refresh mode) for that plan first; otherwise build.
+   Refactor card → no plan; the refactor agent plans its own moves
+   (characterization tests from tester first if the target has no passing test).
+3. **Build + write tests, in parallel** — dispatch dev (refactor card → refactor)
+   in the story worktree and, at the same time, tester (write phase) in the
+   story's tests worktree — both from the plan. dev commits and pushes the story
+   branch; tester writes the tests from the plan's Test list and Contract and
+   commits on the tests branch (local, never pushed). When both return, merge the
+   tests in: `git -C .worktrees/us-<n> merge --no-edit us-<n>-<slug>-tests`, push,
+   remove the tests worktree. Row → In Review.
    The plan is a contract: dev decides only internals the plan leaves open and
    returns a `QUESTION` for anything else (dev.md lists what). Route it by kind:
    - technical (how to build it) → planner (consult mode, `model: fable`). It
@@ -132,11 +149,13 @@ tiers); more than 2 returns from the same step → escalate to User.
    - feature (what gets built: behavior, criteria, scope, UX) → escalate to the
      User. The answer becomes an Amendment, plus a card edit if criteria change.
    Then resume the same dev with the answer via SendMessage (its context intact),
-   not a fresh dispatch. tester raises QUESTIONs the same way.
-4. **Test** — dispatch tester: the plan's test list plus one test per criterion —
-   `[flow]` items as flow tests (e2e-verification layer 1) — committed on the
-   story branch. A failing test on the story's own criteria or
-   test list → back to dev. Findings beyond the story → bug-board.
+   not a fresh dispatch. tester raises QUESTIONs the same way. An Amendment that
+   changes the Contract goes to both dev and tester.
+4. **Run tests** — resume the same tester (run phase, SendMessage) with the story
+   worktree as its new Workdir: run the suite against the real code. A test that is wrong against
+   the plan (bad import, misread signature) tester fixes itself; a failing test on
+   the story's own criteria or Test list is a code result → back to dev. Findings
+   beyond the story → bug-board. tester appends test-report.md.
 5. **Check** — dispatch reviewer (check mode): lint, typecheck, full suite unpiped,
    standards checklist, every criterion backed by a passing test (flow test for
    each `[flow]` item), and the diff
@@ -160,8 +179,10 @@ tiers); more than 2 returns from the same step → escalate to User.
 Bug card: tester writes the regression test (left failing) → dev → steps 5–8 on
 branch `b<n>-<slug>` (PR title `fix: <description>`), row → Fixed. Planner only
 if the root cause is unclear.
-Stories of the current feature with no shared Files may run in parallel, each in
-its own worktree, up to the WIP limit.
+Merging stays one at a time — main is protected with "branch up to date", so
+after each merge, `gh pr update-branch` the next ready PR and let its CI rerun.
+Several PRs waiting on that is expected; the parallel work upstream of the merge
+is where the time is saved.
 
 ### Feature acceptance (every story of the feature merged, its medium/low bugs worked)
 1. Dispatch reviewer and security (feature mode, `model: opus`) on
@@ -204,7 +225,9 @@ fix the contract, do not widen the payload ad hoc.
 
 **One worktree per ticket (mandatory).** At pick, the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards §10). The verifier
+(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards §10). tester's write phase gets
+a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
+us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
 Every agent on that story gets it as `Workdir` and works only there. Dispatch them
 *without* `isolation: "worktree"`: a per-agent worktree cannot check out a branch

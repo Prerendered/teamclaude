@@ -18,7 +18,7 @@ with the same columns:
 ## In Review
 ## Backlog
 ## Done
-| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
+| ID | # | Story | Feature | Needs | Priority | Files | Acceptance criteria |
 ```
 
 - Feature Status: `Building` / `Testing` (merged, with the User) / `Accepted`.
@@ -33,10 +33,12 @@ with the same columns:
 - ID: `US-1`, `US-2`, … — permanent, never reused; the branch is
   `us-<n>-<slug>`. `#` is the order within the feature — dependency-sorted, see
   below.
+- Needs: the story IDs it truly depends on (`—` if none). A story is ready once
+  every ID in Needs is Done. Ordering preference goes in `#`, never in Needs.
 - Files: the story's expected file footprint — the Overseer uses it for the
-  parallel-dispatch check (shared file = sequential).
-- WIP limit: never more than 2 cards In Progress across both boards — finish
-  before starting new.
+  parallel-dispatch check (shared file with a card in flight = wait).
+- WIP cap: `wip:` in team/state.md (default 4) cards In Progress + In Review
+  across both boards.
 - board.md holds stories and refactor cards only. Bugs go on bug-board.md.
 - Pre-2.0 board (Status or Phase column, no Features table) → restructure on
   first edit: group stories into features, assign IDs, move bug cards to

@@ -68,11 +68,12 @@ ENTRY
    ▼
 DELIVERY LOOP — one feature at a time (open critical/high bug first)
    │
+   │  feature start: planner writes every story's plan at once (opus/fable)
+   │  then every READY story (Needs merged, no shared files) runs at once, up to wip: 4
    │  per story, in its own worktree on branch us-<n>-<slug>
-   ├► planner ── verified build plan: files, signatures, APIs, test list (opus/fable)
-   ├► dev ────── builds the plan, asks on anything outside it (sonnet)
+   ├► dev ‖ tester ─ in parallel from the plan: dev builds, tester writes the tests
    │              └ QUESTION: technical → planner on fable · feature → User
-   ├► tester ─── tests from the plan + criteria (flow tests per criterion), on the branch
+   ├► tester ─── runs its tests against dev's code (flow tests per criterion)
    ├► reviewer ─ check: lint, typecheck, suite, standards, plan conformance
    ├► Overseer ─ opens the PR
    ├► reviewer ─ PR review posted on GitHub (+ security if sensitive)

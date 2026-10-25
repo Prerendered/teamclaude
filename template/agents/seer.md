@@ -26,13 +26,17 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 5. Add non-functional stories: error, empty, and loading states for every
    core surface — inside the feature they belong to.
 6. Assign permanent IDs (`US-1`, `US-2`, … across the board) and a
-   dependency-sorted `#` within each feature.
+   dependency-sorted `#` within each feature. Fill `Needs` with the IDs a story
+   truly depends on (it calls their code or needs their data) — nothing more. An
+   empty Needs is what lets the Overseer build stories in parallel, so never
+   add a dependency for ordering's sake.
 7. Fill the Files column with each story's expected file footprint — this
    drives the Overseer's parallel-dispatch check.
 
 ## Done when
 - Every plan feature maps to ≥1 story; every story has an ID, a feature, 4–7
-  checkable criteria, a unique `#` within its feature, and a Files entry.
+  checkable criteria, a unique `#` within its feature, a Needs entry (`—` if
+  none), and a Files entry.
 - Every feature is testable by the User once its stories are merged.
 
 ## Output format

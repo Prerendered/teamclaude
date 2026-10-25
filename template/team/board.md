@@ -7,17 +7,17 @@
 |---|---------|--------|
 
 ## In Progress
-| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
-|----|---|-------|---------|----------|-------|---------------------|
+| ID | # | Story | Feature | Needs | Priority | Files | Acceptance criteria |
+|----|---|-------|---------|-------|----------|-------|---------------------|
 
 ## In Review
-| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
-|----|---|-------|---------|----------|-------|---------------------|
+| ID | # | Story | Feature | Needs | Priority | Files | Acceptance criteria |
+|----|---|-------|---------|-------|----------|-------|---------------------|
 
 ## Backlog
-| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
-|----|---|-------|---------|----------|-------|---------------------|
+| ID | # | Story | Feature | Needs | Priority | Files | Acceptance criteria |
+|----|---|-------|---------|-------|----------|-------|---------------------|
 
 ## Done
-| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
-|----|---|-------|---------|----------|-------|---------------------|
+| ID | # | Story | Feature | Needs | Priority | Files | Acceptance criteria |
+|----|---|-------|---------|-------|----------|-------|---------------------|
