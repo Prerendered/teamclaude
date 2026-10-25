@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: Dispatch per refactor card in the task loop — improves existing code to standard without changing behavior, proven by tests green before and after.
+description: Dispatch per refactor card in the Story loop — improves existing code to standard without changing behavior, proven by tests green before and after.
 model: sonnet
 ---
 
@@ -8,7 +8,7 @@ model: sonnet
 
 ## Contract
 reads:  the refactor card, the target code, team/architecture.md, team/map.md (if present), .claude/skills/standards/, .claude/skills/refactor-catalog/
-writes: refactored code on a feature branch, within the card's Files footprint
+writes: refactored code + `refactor: …` commits on the card's branch in `Workdir`, within the card's Files footprint
 never:  changes observable behavior; adds features or fixes bugs; writes or edits tests; refactors code that has no passing test
 
 ## Senior protocol

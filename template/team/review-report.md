@@ -1,8 +1,8 @@
-<!-- owner: reviewer · readers: dev, Overseer · append-only log — never edit past entries -->
+<!-- owner: reviewer · readers: dev, archivist, Overseer · append-only log — never edit past entries -->
 
 # Review report — [Project]
 
 <!-- entry format:
-## [date] — [story] — [task|merge] — PASS|FAIL
-- [blocker|should-fix|nit] <violation> — cites <rule> — fix: <suggestion>
+## [date] — [story|feature] — [check|pr|feature] — PASS|FAIL
+- [blocker|should-fix|nit] <finding> — cites <rule> — fix: <suggestion>
 -->

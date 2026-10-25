@@ -16,7 +16,10 @@
 
 ### Out
 
-## Stack
+## Constraints
+<!-- what bounds the tech choice — mandated or ruled-out tech, hosting, budget,
+     offline/online, platforms. The stack itself is chosen at the Tech gate
+     (team/tech-options.md), not here. -->
 
 ## Design direction
 

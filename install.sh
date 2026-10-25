@@ -4,7 +4,7 @@
 # keep the install logic here in sync with it.
 # Public repo:  curl -sL <raw-url>/install.sh | bash -s --
 # Private repo: git clone <repo> && bash teamclaude/install.sh --local
-# --stack is optional; the stack is normally chosen at intake.
+# --stack is optional; the stack is normally chosen at the Tech gate.
 set -euo pipefail
 
 REPO_URL="${TEAMCLAUDE_REPO:-https://github.com/Prerendered/teamclaude.git}"
@@ -18,6 +18,7 @@ LOCAL=0
 TRACK_TEAM=0
 IGNORE_MARK="# teamclaude working state — local only"
 IGNORE_RULE="/team/"
+WORKTREE_RULE="/.worktrees/"
 
 usage() {
   cat <<EOF
@@ -29,11 +30,11 @@ Flags:
                       skills, and CLAUDE.md; leaves .claude/settings.json,
                       project-local agents/skills, and team/ artifacts untouched.
                       Defaults --stack to the value in team/state.md.
-  --stack <name>      Optional. The stack is normally chosen at intake; pass it only
+  --stack <name>      Optional. The stack is normally chosen at the Tech gate; pass it only
                       to decide up front. Stacks with a scaffold skill:
                       ${SCAFFOLDED_STACKS// /, }.
                       Any other name installs without a scaffold. Omit to keep all
-                      scaffold skills and let intake pick.
+                      scaffold skills and let the Tech gate pick.
   --version <tag>     Team version to install (git tag, e.g. v1.0).
                       Defaults to the latest tag — never main HEAD.
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo. When
@@ -146,7 +147,7 @@ fi
 cp "$SRC/CLAUDE.md" ./CLAUDE.md
 
 # Stack chosen up front → keep only its scaffold skill (none for custom stacks).
-# Stack omitted → keep all scaffold skills; intake picks later.
+# Stack omitted → keep all scaffold skills; the Tech gate picks later.
 if [ -n "$STACK" ]; then
   for dir in .claude/skills/scaffold-*; do
     [ "$(basename "$dir")" = "scaffold-$STACK" ] || rm -rf "$dir"
@@ -193,20 +194,34 @@ if [ -n "$REPERTOIRE" ]; then
 fi
 
 # team/ is local working state — gitignore it unless the user opted to track it.
-# Only the two lines we add are ever removed.
+# .worktrees/ holds per-story checkouts and is never tracked. Only the /team/ line
+# we add is ever removed.
+touch .gitignore
 if [ "$TRACK_TEAM" -eq 1 ]; then
   grep -q '^team-tracked:' team/state.md \
     || printf 'team-tracked: true\n%s\n' "$(cat team/state.md)" > team/state.md
-  if [ -f .gitignore ]; then
-    grep -vxF -e "$IGNORE_MARK" -e "$IGNORE_RULE" .gitignore > .gitignore.tmp || true
+  grep -vxF "$IGNORE_RULE" .gitignore > .gitignore.tmp || true
+  mv .gitignore.tmp .gitignore
+fi
+MISSING=""
+if [ "$TRACK_TEAM" -eq 0 ] && ! grep -qxE '[[:space:]]*/?team/?[[:space:]]*' .gitignore; then
+  MISSING="$IGNORE_RULE"
+fi
+if ! grep -qxE '[[:space:]]*/?\.worktrees/?[[:space:]]*' .gitignore; then
+  MISSING="${MISSING:+$MISSING
+}$WORKTREE_RULE"
+fi
+if [ -n "$MISSING" ]; then
+  if grep -qxF "$IGNORE_MARK" .gitignore; then
+    awk -v mark="$IGNORE_MARK" -v add="$MISSING" '{ print } $0 == mark { print add }' .gitignore > .gitignore.tmp
     mv .gitignore.tmp .gitignore
+  else
+    if [ -s .gitignore ]; then
+      [ -z "$(tail -c 1 .gitignore)" ] || echo >> .gitignore
+      echo >> .gitignore
+    fi
+    printf '%s\n%s\n' "$IGNORE_MARK" "$MISSING" >> .gitignore
   fi
-elif ! { [ -f .gitignore ] && grep -qxE '[[:space:]]*/?team/?[[:space:]]*' .gitignore; }; then
-  if [ -s .gitignore ]; then
-    [ -z "$(tail -c 1 .gitignore)" ] || echo >> .gitignore
-    echo >> .gitignore
-  fi
-  printf '%s\n%s\n' "$IGNORE_MARK" "$IGNORE_RULE" >> .gitignore
 fi
 
 if [ "$UPDATE" -eq 1 ]; then
@@ -217,7 +232,7 @@ if [ "$UPDATE" -eq 1 ]; then
   [ -z "$SEEDED" ] || echo "new team/ stubs added:$SEEDED"
   echo "Existing team/ artifacts and .claude/settings.json were not touched."
 elif [ -z "$STACK" ]; then
-  echo "teamclaude $VERSION installed. Stack: chosen at intake (all scaffold skills kept)."
+  echo "teamclaude $VERSION installed. Stack: chosen at the Tech gate (all scaffold skills kept)."
 else
   echo "teamclaude $VERSION installed (stack: $STACK)."
   if [ "$HAS_SCAFFOLD" -eq 0 ]; then

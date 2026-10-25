@@ -1,36 +1,46 @@
 ---
 name: board-conventions
-description: Story and bug card formats, acceptance criteria, phases, order numbers, and section layout for team/board.md and team/bug-board.md — load when creating or editing either board.
+description: Feature, story, and bug card formats, acceptance criteria, feature sequencing, IDs and order, and section layout for team/board.md and team/bug-board.md — load when creating or editing either board.
 ---
 
 # Board conventions
 
 ## board.md layout
 
-Sections in this fixed order, each holding one table with the same columns:
+A Features table, then story sections in this fixed order, each holding one table
+with the same columns:
 
 ```markdown
+## Features
+| F | Feature | Status |
+
 ## In Progress
 ## In Review
 ## Backlog
 ## Done
-| # | Story | Priority | Phase | Files | Acceptance criteria |
+| ID | # | Story | Feature | Priority | Files | Acceptance criteria |
 ```
 
-- The section is the status — there is no Status column. Changing status means
-  moving the row to that section, never editing a field.
-- Backlog rows sorted by `#` ascending. Done rows newest-first (a card moving to
-  Done goes to the top of Done), so the board reads top-down from live work to
-  history.
+- Feature Status: `Building` / `Testing` (merged, with the User) / `Accepted`.
+  Features listed in delivery order; the current feature is the first not
+  Accepted. Work finishes one feature before starting the next.
+- The section is the story's status — there is no Status column. Changing status
+  means moving the row to that section, never editing a field.
+- Backlog rows sorted by Feature delivery order, then `#`. Done rows newest-first
+  (a card moving to Done goes to the top of Done), so the board reads top-down
+  from live work to history. Done means the PR is merged.
 - New stories always start in Backlog.
-- `#` is the Order number — dependency-sorted, see below.
+- ID: `US-1`, `US-2`, … — permanent, never reused; the branch is
+  `us-<n>-<slug>`. `#` is the order within the feature — dependency-sorted, see
+  below.
 - Files: the story's expected file footprint — the Overseer uses it for the
   parallel-dispatch check (shared file = sequential).
 - WIP limit: never more than 2 cards In Progress across both boards — finish
   before starting new.
 - board.md holds stories and refactor cards only. Bugs go on bug-board.md.
-- Pre-2.0 board (single table with a Status column) → restructure into sections on
-  first edit and move any bug cards to bug-board.md.
+- Pre-2.0 board (Status or Phase column, no Features table) → restructure on
+  first edit: group stories into features, assign IDs, move bug cards to
+  bug-board.md.
 
 ## bug-board.md layout
 
@@ -41,13 +51,13 @@ status; Fixed newest-first). Columns:
 | ID | Bug | Severity | Found by | Story | Files | Repro |
 ```
 
-- ID: `B1`, `B2`, … — never reused.
+- ID: `B1`, `B2`, … — never reused; the branch is `b<n>-<slug>`.
 - Severity: critical (data loss, crash or invariant broken in a core flow) / high
   (core flow broken, Done story's criterion fails) / medium (secondary flow broken
   or workaround exists) / low (cosmetic, edge case).
 - Open rows sorted by severity, then ID.
-- Found by: tester / e2e gate / security / User.
-- Story: the `#` of the story it breaks, or `—`.
+- Found by: tester / reviewer / security / e2e gate / User.
+- Story: the ID of the story it breaks, or `—`.
 - Repro: one line — the exact input or steps and the observed vs expected result.
 
 ## Story format
@@ -62,22 +72,26 @@ status; Fixed newest-first). Columns:
 - Each condition independently verifiable (yes/no).
 - Cover the happy path, at least one edge case, at least one technical/data requirement.
 - No vague conditions like "works correctly" — specify the expected behaviour.
-- A story is only Done when every criterion is checked.
+- A story is only Done when every criterion is checked and its PR is merged.
 
-## Sequencing phases
+## Feature sequencing
 
-| Phase | What goes here | Priority |
-|---|---|---|
-| 1 — Foundation | Repo setup, auth, install flow, onboarding | High |
-| 2 — Core flow | Minimum path through the primary use case | High |
-| 3 — Core interactions | Supporting interactions that complete the primary flow | High |
-| 4 — Session/state polish | Edge cases, close/end states, status visibility | Medium |
-| 5 — Secondary features | Calendar, history, ratings, analytics | Medium |
-| 6 — Nice to have | Settings, profile editing, leave/delete flows | Low |
+A feature is a slice the User can test end to end on its own. Order features:
+
+| Order | What goes here |
+|---|---|
+| First | Foundation — repo setup, auth, install flow, onboarding — only what the first real feature needs |
+| Next | The core loop's primary path, as the first user-testable feature |
+| Then | Features that complete the core loop, by dependency then user value |
+| Later | Secondary features — history, ratings, analytics |
+| Last | Nice to have — settings, profile editing, leave/delete flows |
+
+Each feature carries its own error, empty, and loading states — polish ships with
+the feature, not in a later sweep.
 
 ## Order number rules
 
-- Order reflects dependency — if B requires A, A gets a lower number.
-- Tasks in the same phase ordered by user-facing impact.
-- Integers starting at 1, no duplicates.
-- When adding tasks mid-project, use decimals temporarily (e.g. 4.5).
+- `#` reflects dependency within the feature — if B requires A, A gets a lower number.
+- Stories in the same feature ordered by user-facing impact after dependency.
+- Integers starting at 1 per feature, no duplicates within a feature.
+- When adding stories mid-feature, use decimals temporarily (e.g. 4.5).

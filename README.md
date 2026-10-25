@@ -11,14 +11,15 @@ bunx github:Prerendered/teamclaude init
 ```
 
 Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
-`team/` is the team's local working state (plan, boards, reports) and is added to
-`.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
-The **stack is chosen during intake**, so no flags are needed. `npx` works identically.
+`team/` is the team's local working state (plan, boards, reports, story plans) and is added
+to `.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
+`.worktrees/` (one checkout per story in flight) is always ignored.
+The **stack is chosen at the Tech gate** (the architect researches options, you pick), so no flags are needed. `npx` works identically.
 Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
 
 | Flag | Meaning |
 |---|---|
-| `--stack <name>` | Optional. The stack is normally decided at intake — pass this only to lock it up front. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold. Omit to keep all scaffolds and let intake pick. |
+| `--stack <name>` | Optional. The stack is normally chosen at the Tech gate — pass this only to lock the app framework up front (the architect still researches the other use cases). Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold. Omit to keep all scaffolds and let the Tech gate pick. |
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
 | `--track-team` | Optional. Commit `team/` with the project instead of gitignoring it. Recorded in `team/state.md`, so `update` keeps it. |
 | `--force` | `init` only. Reinstall over an existing `.claude/` directory. |
@@ -57,57 +58,75 @@ ENTRY
    ▼
 ══ GATE 1: User approves plan ══
    │
-   ├─► architect ──► architecture.md + scaffold   (greenfield)
-   ├─► cicd ──────► repo, CI, branch rules
+   ├─► architect ──► research: tech-options.md (per use case: ★ + 5 alternatives)
+   ├══ TECH GATE: User picks the stack ══
+   ├─► architect ──► architecture.md + scaffold (the one direct commit to main)
+   ├─► cicd ──────► repo, CI, branch protection, auto-merge
    ├─► designer ──► design.md + tokens            (UI stacks)
-   └─► seer ──────► board.md (stories, criteria, order)
+   └─► seer ──────► board.md: features in delivery order, stories per feature
    │
    ▼
-TASK LOOP (open critical/high bug first, else lowest Order)
+DELIVERY LOOP — one feature at a time (open critical/high bug first)
    │
-   ├► scout ──── brief mode: recon for unfamiliar code (on demand)
-   ├► dev ────── feature card: implements on feature branch
-   ├► refactor ─ refactor card: behavior-preserving cleanup, tests green before+after
-   ├► reviewer ─ task mode ── fail ─► builder (max 2 loops → escalate)
-   ├► security ─ security-sensitive card: card-mode review
-   ├► tester ─── tests + report ── bugs → bug-board.md
-   ├► seer ───── validates criteria vs evidence
-   └► Overseer ─ card → Done, commit, state.md, next card
+   │  per story, in its own worktree on branch us-<n>-<slug>
+   ├► planner ── verified build plan: files, signatures, APIs, test list (opus/fable)
+   ├► dev ────── builds the plan, asks on anything outside it (sonnet)
+   │              └ QUESTION: technical → planner on fable · feature → User
+   ├► tester ─── tests from the plan + criteria, committed on the branch
+   ├► reviewer ─ check: lint, typecheck, suite, standards, plan conformance
+   ├► Overseer ─ opens the PR
+   ├► reviewer ─ PR review posted on GitHub (+ security if sensitive)
+   └► auto-merge on green CI ─► story Done
+   │                 any FAIL ─► back to dev (escalate after 2)
    │
-   ▼
-══ GATE 2: reviewer merge + security merge + scribe docs + CI green + User approves ══
+   ▼  every story of the feature merged
+FEATURE ACCEPTANCE
+   ├► reviewer + security ─ feature mode (opus) on the cumulative diff
+   ├► end-to-end gate ───── automatable paths + manual-test list
+   ├► User tests the feature ─► findings → bug-board ─► Accepted
+   └► scribe ─ docs PR
    │
-   ▼
-PUSH TO MAIN
-   │
-   ▼
+   ▼  next feature … last feature Accepted
 PROJECT WRAP (if a repertoire is configured)
    └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
 The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages.
 
-`team/board.md` holds stories in sections — In Progress, In Review, Backlog, Done — so live
-work is at the top and history sinks to the bottom. Bugs go on a separate
-`team/bug-board.md` (In Progress, Open, Fixed) with a severity and a one-line repro. An Open
-critical/high bug is fixed before the next story; medium/low are worked at phase end. Each
-bug is fixed test-first: tester writes a failing regression test, dev makes it pass. Between the two gates the team runs autonomously; it escalates only for review loops >2, ambiguous criteria, or destructive actions. A high or critical security finding blocks Gate 2.
+`team/board.md` starts with a Features table (Building → Testing → Accepted), then stories
+in sections — In Progress, In Review, Backlog, Done — so live work is at the top and history
+sinks to the bottom. Bugs go on a separate `team/bug-board.md` (In Progress, Open, Fixed)
+with a severity and a one-line repro. An Open critical/high bug is fixed before the next
+story; medium/low are worked before the feature's acceptance. Each bug is fixed test-first:
+tester writes a failing regression test, dev makes it pass.
+
+**GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). Commits and
+PR titles are `<type>: <description>` — the PR title becomes the single squash commit on
+main. PR bodies are lean: the ticket line, a short summary, the criteria checklist.
+Everything is authored under your own git/gh identity with no AI attribution lines, so
+reviews are posted as PR comments (GitHub won't let an author approve their own PR) and
+green CI is the merge gate.
+
+After Gate 1 and the Tech gate the team runs autonomously. It comes back to you to test each finished
+feature, for feature questions (behavior, criteria, scope), for review loops past 2, and
+for destructive actions.
 
 ## Agent roster
 
 | Agent | reads | writes | never |
 |---|---|---|---|
-| `seer` | plan.md, board-conventions, test-report.md (validate mode) | board.md | writes code; marks Done without evidence |
-| `architect` | plan.md, stack skill, reference-library | architecture.md, scaffold | implements features; skips Decisions section |
+| `seer` | plan.md, board-conventions | board.md (features + stories) | writes code; plans implementation |
+| `planner` | story, architecture.md, map.md, design.md, the code, scout brief | plans/US-<n>.md (plan + Amendments) | writes code; changes criteria or scope; answers feature questions |
+| `architect` | plan.md (constraints, invariants), web research, stack skill, reference-library | tech-options.md (research), architecture.md + scaffold (design) | implements features; lists tech that breaks the plan; picks the stack for the User |
 | `scout` | existing codebase, codebase-survey, standards | architecture.md, map.md, recon briefs | writes code; invents structure the code lacks |
-| `dev` | one story or bug card, architecture.md, design.md, standards | code on feature branch | touches either board; edits other stories' files; writes tests |
+| `dev` | one story or bug card, its plan, architecture.md, standards | code + commits on the story branch | touches team/; edits files outside the plan; decides what the plan leaves closed; writes tests |
 | `refactor` | refactor card, target code, map.md, refactor-catalog, standards | refactored code on a branch | changes behavior; adds features; edits tests; refactors untested code |
-| `reviewer` | diff, standards, architecture.md | review-report.md | implements fixes; reviews own suggestions |
-| `security` | diff/branch, security-standards, architecture.md | security-report.md | implements fixes; passes without a dep check |
+| `reviewer` | diff, plan, criteria, test-report.md, standards, architecture.md | review-report.md, PR review comment, bug cards (feature mode) | implements fixes; approves its own PR on GitHub |
+| `security` | PR diff / feature diff, security-standards, architecture.md | security-report.md, PR review comment | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
-| `tester` | story criteria or bug card, code | tests/ (all tests, unit + criteria, bug regression tests), test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
-| `scribe` | finished code, architecture.md, board.md | README.md, docs/ | changes code; documents unbuilt features |
-| `cicd` | plan.md, gh-workflows skill | .github/, repo config | touches application code |
+| `tester` | story criteria or bug card, plan test list, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
+| `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
+| `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |
 | `archivist` | team/ artifacts, state.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
 
 ## Brownfield: dropped into an existing project
@@ -139,10 +158,10 @@ precedent instead of zero.
   stack, decisions, patterns that worked, and pitfalls from the review/test/security
   reports — into an entry and, once you approve, pushes it to the repertoire repo.
 - **At intake**, when a `repertoire:` is configured the Overseer raw-fetches the ToC
-  (`raw.githubusercontent.com`, no clone) and proposes a matching past project's
-  stack and patterns as the default; the architect gets the matched entries as
-  references. Precedent is a default, never law — you confirm, deviations go in the
-  Decisions block.
+  (`raw.githubusercontent.com`, no clone) and notes up to 2 matching past projects.
+  The architect's research lists each one's tech as a candidate at the Tech gate,
+  with its recorded pitfalls in the cons. Precedent is a candidate, never law — you
+  pick, and the choice lands in the Decisions block.
 
 The repertoire is a plain git repo you own:
 
@@ -177,6 +196,6 @@ Any stack already works without a scaffold — the architect derives structure f
 
 1. Create `template/agents/<name>.md` following the format in the repo's engineering guidelines: frontmatter, Contract (reads/writes/never — `never:` is mandatory), Senior protocol reference, Procedure, Done when, Output format. Keep it under ~120 lines.
 2. Reference skills by path — never duplicate their content.
-3. Wire the dispatch point into `template/CLAUDE.md` (setup phase or task loop).
+3. Wire the dispatch point into `template/CLAUDE.md` (setup phase or delivery loop).
 4. Update the agent roster table above.
 5. New agent = minor bump; changing an existing agent's contract = major bump.

@@ -15,7 +15,7 @@ Every pass walks all review classes; mark each cleared or a finding.
 | Input validation | boundary trust: Zod / `v.*` on every external input (standards §14 Fail Fast); mass assignment |
 | Secrets & config | hardcoded keys, secrets in logs/URLs, committed `.env`, permissive CORS, debug on in prod |
 | Data exposure | over-fetching, PII in responses/logs, missing encryption in transit or at rest |
-| Dependencies | known CVEs, unpinned versions, abandoned packages (merge mode audits these) |
+| Dependencies | known CVEs, unpinned versions, abandoned packages (feature mode audits these; card mode on a manifest change) |
 | Auth tokens | weak session handling, missing expiry, tokens in localStorage, no CSRF protection |
 
 ## Severity

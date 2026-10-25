@@ -30,10 +30,10 @@ Commands:
                       team/ artifacts untouched.
 
 Flags:
-  --stack <name>      Optional. The stack is normally chosen at intake; pass it only
+  --stack <name>      Optional. The stack is normally chosen at the Tech gate; pass it only
                       to decide up front. Scaffolded: ${SCAFFOLDED.join(', ')}.
                       Any other name installs without a scaffold. Omit to keep all
-                      scaffold skills and let intake pick. On update, defaults to
+                      scaffold skills and let the Tech gate pick. On update, defaults to
                       the stack recorded in team/state.md.
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo.
   --track-team        Commit team/ with the project. By default team/ is local
@@ -87,7 +87,7 @@ const syncTree = async (name) => {
   return present.filter((e) => !owned.includes(e)).map((e) => `${name}/${e}`);
 };
 
-// Stack decided up front → keep only its scaffold. Omitted → keep all; intake picks.
+// Stack decided up front → keep only its scaffold. Omitted → keep all; the Tech gate picks.
 const pruneScaffolds = async (chosen) => {
   if (!chosen) return;
   for (const entry of await fs.readdir('.claude/skills')) {
@@ -137,20 +137,32 @@ const readState = async (key) => {
 };
 
 // team/ is the team's local working state — keep it out of the project remote
-// unless the user opted in. Only the two lines we add are ever removed.
+// unless the user opted in. .worktrees/ holds per-story checkouts and is never
+// tracked. Only the /team/ line we add is ever removed.
 const IGNORE_MARK = '# teamclaude working state — local only';
-const IGNORE_RULE = '/team/';
+const TEAM_RULE = '/team/';
+const WORKTREE_RULE = '/.worktrees/';
+const covers = (lines, rule) => {
+  const bare = rule.replace(/^\/|\/$/g, '');
+  return lines.some((l) => [bare, `/${bare}`, `${bare}/`, `/${bare}/`].includes(l.trim()));
+};
 const syncGitignore = async () => {
   const had = existsSync('.gitignore') ? await read('.gitignore') : '';
-  const lines = had.split(/\r?\n/);
-  if (trackTeam) {
-    const kept = lines.filter((l) => l !== IGNORE_MARK && l !== IGNORE_RULE);
-    if (kept.length !== lines.length) await fs.writeFile('.gitignore', kept.join('\n'));
-    return;
+  let lines = had.split(/\r?\n/);
+  if (trackTeam) lines = lines.filter((l) => l !== TEAM_RULE);
+  const missing = [...(trackTeam ? [] : [TEAM_RULE]), WORKTREE_RULE].filter((r) => !covers(lines, r));
+  let next = lines.join('\n');
+  if (missing.length) {
+    const at = lines.indexOf(IGNORE_MARK);
+    if (at >= 0) {
+      lines.splice(at + 1, 0, ...missing);
+      next = lines.join('\n');
+    } else {
+      const lead = !next ? '' : next.endsWith('\n') ? '\n' : '\n\n';
+      next = `${next}${lead}${[IGNORE_MARK, ...missing].join('\n')}\n`;
+    }
   }
-  if (lines.some((l) => ['team', 'team/', '/team', '/team/'].includes(l.trim()))) return;
-  const lead = !had ? '' : had.endsWith('\n') ? '\n' : '\n\n';
-  await fs.writeFile('.gitignore', `${had}${lead}${IGNORE_MARK}\n${IGNORE_RULE}\n`);
+  if (next !== had) await fs.writeFile('.gitignore', next);
 };
 
 // An ignore rule does not untrack files that are already committed.
@@ -191,7 +203,7 @@ const init = async () => {
     console.log(`teamclaude ${VERSION} installed (stack: ${stack}).`);
     if (!SCAFFOLDED.includes(stack)) console.log(`note: no scaffold skill for '${stack}' — the architect will derive structure from reference repos.`);
   } else {
-    console.log(`teamclaude ${VERSION} installed. Stack: chosen at intake (all scaffold skills kept).`);
+    console.log(`teamclaude ${VERSION} installed. Stack: chosen at the Tech gate (all scaffold skills kept).`);
   }
   if (repertoire) console.log(`repertoire: ${repertoire} — consulted at intake, saved at wrap.`);
   reportTeam();

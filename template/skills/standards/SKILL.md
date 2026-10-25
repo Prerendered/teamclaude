@@ -146,9 +146,23 @@ Ownership: the tester agent authors all tests (unit + criteria). Dev never write
 
 ## 10. Git
 
-Branches: `<feature-name>` kebab-case, no type prefix. One concern per branch. Branch off `main` only. Delete after merge. Never commit directly to `main`.
+Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `docs-f<n>` (feature docs); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
 
-Commits: `<type>: <description>` — imperative, lowercase, no period. Squash merge to `main`. PRs require passing typecheck + tests.
+Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch carries it. Squash merge to `main` via auto-merge; PRs require green CI.
+
+PR title: the squash commit on `main`, so the same `<type>: <description>` format. PR body, lean:
+
+```
+US-<n> · <story title>          (bug: B<n> · <bug>)
+
+<2–3 line summary>
+
+- [x] <criterion>                (bug: - [x] regression test passes)
+```
+
+Nothing else in the body, and never a link into team/ (local only).
+
+Author: the User's own git and gh identity. No `Co-Authored-By` trailers and no "Generated with" lines in commits, PR titles, PR bodies, or review comments.
 
 Commit body: terse. The subject line alone is enough for most commits; add a body only to record *why* a non-obvious change was made, in one or two lines — never a multi-paragraph changelog restating the diff.
 
@@ -192,7 +206,7 @@ Tests: existing suite passes; no tests deleted or weakened (authoring: tester ag
 Security: no secrets, no sensitive data in URLs
 ```
 
-## 16. Before marking a task Done
+## 16. Before opening the PR
 
 ```
 [ ] bun run typecheck — zero errors
@@ -200,5 +214,5 @@ Security: no secrets, no sensitive data in URLs
 [ ] Post-change checklist passed
 [ ] Acceptance criteria fully met
 [ ] Branch clean — no unrelated changes
-[ ] team/state.md updated
+[ ] Branch pushed
 ```

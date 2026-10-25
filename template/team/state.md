@@ -3,8 +3,8 @@ team-version: unpinned
 
 # state.md — [Project]
 
-## Current phase
-[e.g. Phase 2 — Core flow]
+## Current feature
+[e.g. F2 — Accounts · Building · start commit: <sha>]
 
 ## What was last worked on
 - [completed task]

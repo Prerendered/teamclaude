@@ -1,6 +1,6 @@
 ---
 name: gh-workflows
-description: CI workflow and branch protection templates — load when dispatched as cicd.
+description: CI workflow, merge settings, and branch protection templates — load when dispatched as cicd.
 ---
 
 # GitHub workflows
@@ -67,3 +67,20 @@ gh api -X PUT "repos/{owner}/{repo}/branches/main/protection" \
 ```
 
 Result to verify: direct push to main rejected; PRs require the `check` job green.
+No required approvals: the same identity opens and reviews every PR, and GitHub
+does not let an author approve their own PR — reviews are comments, CI is the gate.
+
+## Merge settings
+
+Every story PR is squash-merged by auto-merge, and its title becomes the one
+commit on main:
+
+```bash
+gh repo edit --enable-auto-merge --delete-branch-on-merge   --enable-squash-merge --enable-merge-commit=false --enable-rebase-merge=false
+gh api -X PATCH "repos/{owner}/{repo}"   -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=BLANK
+```
+
+Result to verify (`gh api repos/{owner}/{repo}`): `allow_auto_merge` and
+`delete_branch_on_merge` true, only `allow_squash_merge` true, squash title
+`PR_TITLE`, message `BLANK` — so main reads `<type>: <description> (#n)` and
+nothing else.
