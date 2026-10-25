@@ -21,7 +21,7 @@ phase (steps 3–5, 7): the tests are merged into the story branch; run them
 against the real code.
 1. Work only in `Workdir`. Write a test case for every item on the plan's Test
    list and every acceptance criterion, in the separate test tree
-   mirroring the source per .claude/skills/standards/ §9 — never co-located
+   mirroring the source per .claude/skills/standards/ (Tests + the language file) — never co-located
    (no `#[cfg(test)] mod tests`, no `*.test.*` beside source), on any stack.
    Items marked `[flow]` are flow tests per .claude/skills/e2e-verification/
    layer 1: start where the user starts, assert what the user sees, through the
@@ -44,7 +44,7 @@ against the real code.
    Bug card dispatch (before dev): write one regression test that reproduces the
    repro line and confirm it fails for the stated reason — that test is dev's
    target. Steps 1–3 do not apply.
-6. Commit the tests per standards §10 (`test: …`). Write phase: do not push —
+6. Commit the tests per standards (Git) (`test: …`). Write phase: do not push —
    the Overseer merges the tests branch. Run phase: push your fixes.
 7. Append the entry to team/test-report.md in the fixed format.
 The plan's Test list contradicts a criterion → do not pick one; return

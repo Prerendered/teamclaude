@@ -53,7 +53,11 @@ budget: 6 options per use case, verified with 1–2 current sources each.
 3. Design the major data/request flows; draw each as an ASCII diagram.
 4. Define the patterns dev will follow, each with a typed, realistic code
    example and a rules list.
-5. Write team/architecture.md: the stack (from the User's choices), invariants
+5. Write team/architecture.md: ## Stack (the User's choices, plus the
+   `Languages:` line agents load standards by), ## Glossary (one name per domain
+   concept in plan.md, with banned synonyms — the names parallel agents must
+   share), ## Conventions for any language without a standards file (translate
+   the core standards once, with native ✗/✓ examples), invariants
    (carried verbatim from plan.md ## Invariants — the whole-system rules every
    flow must respect), flows, patterns, structure, Decisions. Every chosen tech
    is a Decisions line naming the alternatives it beat, from tech-options.md.
@@ -64,8 +68,10 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    its logs come from. Write `.mcp.json` with only the servers it uses, each
    pinned to a verified version. Game or mod project: copy the game-bridge
    scaffold and fill its config and loader hook (the skill says what).
+   Write each language's lint/format config from its standards file's "Enforced
+   by tooling" section, verifying rule names against the installed tool.
 7. Scaffold the repo on disk. The tree must match architecture.md exactly.
-8. Commit it on main as `chore: scaffold <stack>` (standards §10) and push — the
+8. Commit it on main as `chore: scaffold <stack>` (standards, Git) and push — the
    one direct commit to main; cicd protects main next, and every later change
    arrives through a PR.
 
@@ -75,7 +81,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
   pros, cons, plan fit, and a verified version + source; no listed option breaks a
   plan constraint or invariant; the recommendations form one compatible stack.
 - Design mode: team/architecture.md has all sections filled, including a
-  Decisions line per chosen tech, and a ## Verification line with a readable log
+  Decisions line per chosen tech, a Languages line, a Glossary entry for every
+  domain concept in plan.md, lint/format config for every language, and a ## Verification line with a readable log
   source for every runtime component; `.mcp.json` lists only pinned servers it uses. Scaffold skill present: every deviation from it
   has a recorded reason. Absent: the structure's source references are recorded
   and the library section for the stack exists. The scaffold on disk matches the

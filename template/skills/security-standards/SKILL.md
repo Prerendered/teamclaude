@@ -12,7 +12,7 @@ Every pass walks all review classes; mark each cleared or a finding.
 |---|---|
 | Authn/Authz | missing checks, broken object-level access (IDOR), privilege escalation, trusting client-set identity |
 | Injection | SQL/NoSQL, command, path traversal, SSRF, XSS — any unsanitized input reaching an interpreter |
-| Input validation | boundary trust: Zod / `v.*` on every external input (standards §14 Fail Fast); mass assignment |
+| Input validation | boundary trust: Zod / `v.*` on every external input (standards, Design principles: Fail Fast); mass assignment |
 | Secrets & config | hardcoded keys, secrets in logs/URLs, committed `.env`, permissive CORS, debug on in prod |
 | Data exposure | over-fetching, PII in responses/logs, missing encryption in transit or at rest |
 | Dependencies | known CVEs, unpinned versions, abandoned packages (feature mode audits these; card mode on a manifest change) |

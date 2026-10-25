@@ -25,7 +25,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    team/architecture.md, never link it.
 5. Note the version and setup requirements the cicd and architect artifacts
    establish.
-6. Commit per standards §10 and push the branch.
+6. Commit per standards (Git) and push the branch.
 
 ## Done when
 - README covers what / setup / run / core-usage and every command shown actually

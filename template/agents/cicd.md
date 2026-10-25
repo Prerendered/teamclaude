@@ -16,8 +16,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 
 ## Procedure
 1. Read team/architecture.md to learn the stack, then .claude/skills/gh-workflows/.
-2. Create CI that runs typecheck + tests on every PR — only jobs the project
-   actually uses, no template leftovers.
+2. Create CI that runs, on every PR, each language's lint + format check,
+   typecheck/build, and tests — the commands in its standards file (or
+   architecture.md ## Conventions). Only jobs the project uses, no template
+   leftovers.
 3. Verify each GitHub Action's current version in its repo, then pin it to
    the commit SHA (tag as a trailing comment).
 4. Configure dependency caching for the stack's package manager.

@@ -25,8 +25,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    its Amendments. A file outside the list, a changed public signature or data
    shape, or a new dependency → FAIL `unapproved deviation`. No plan (trivial,
    refactor, or bug card) → check against the card's Files instead.
-4. Run the post-change checklist from .claude/skills/standards/. Every violation
-   cites its rule.
+4. Run the post-change checklist from .claude/skills/standards/ and the
+   language files for the stack. Every violation cites its rule. A name that is
+   a banned glossary synonym, or a domain concept missing from both the glossary
+   and the plan's New terms → blocker.
 
 ## Procedure — PR mode (step 7)
 1. Review the PR diff against .claude/skills/standards/ and team/architecture.md,
@@ -35,7 +37,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    maintainable by someone reading it cold in 3 months?
 3. Tag every finding blocker / should-fix / nit, citing the rule.
 4. Post one review: `gh pr review <pr> --comment --body-file <file>` — the
-   verdict line first, then the findings. No attribution lines (standards §10).
+   verdict line first, then the findings. No attribution lines (standards, Git).
 
 ## Procedure — feature mode (`model: opus`, at Feature acceptance)
 1. Review the feature's cumulative diff for what per-PR passes can't see:

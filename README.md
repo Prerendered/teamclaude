@@ -116,6 +116,13 @@ tester writes a failing regression test, dev makes it pass.
 Project MCP servers live in a committed `.mcp.json`, pinned to exact versions — they ship
 with the tests.
 
+**Code standards** (`standards` skill) are split: a core every stack follows — naming from a per-project
+glossary (one name per concept, so parallel agents agree), why-not-what comments with the usual
+AI habits banned (changelog notes, ticket references, commented-out code), a one-line file header,
+design principles, git — plus one file per language (`typescript`, `csharp`, `rust`) with its
+casing, error model, and short ✗/✓ examples. Every rule a linter or compiler can check is enforced
+by config in CI; the prose covers only what review must catch.
+
 **GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). Commits and
 PR titles are `<type>: <description>` — the PR title becomes the single squash commit on
 main. PR bodies are lean: the ticket line, a short summary, the criteria checklist.
@@ -207,7 +214,8 @@ Any stack already works without a scaffold — the architect derives structure f
 2. Add `<name>` to `SCAFFOLDED_STACKS` in `install.sh`.
 3. Add 2–3 exemplar repos for the stack to `template/skills/reference-library.md`.
 4. Add the stack's CI variation to `template/skills/gh-workflows/SKILL.md`.
-5. Tag a minor release.
+5. New language? Add `template/skills/standards/<language>.md` — commands, the rules tooling enforces (with the config), review-only rules, and native ✗/✓ examples. Without one, the architect translates the core standards into `architecture.md ## Conventions` once per project.
+6. Tag a minor release.
 
 ## Adding a new agent
 

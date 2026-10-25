@@ -1,62 +1,35 @@
 ---
 name: standards
-description: Global coding standards — load before writing or reviewing any code. Migrated from the Operating Manual _standards.md; this skill is the source of truth.
+description: Coding standards — load before writing or reviewing any code. This file holds the rules for every stack; then load only the language files for the project's languages.
 ---
 
-# Global Coding Standards
+# Coding standards
 
-## 0. Precedence
+## Precedence and languages
 
 This skill outranks repo precedent. When existing code contradicts a rule here,
 follow the rule or ask the Overseer — never silently copy the existing pattern
 because "that's how the repo does it". Inheriting debt is a deviation, and a
-deviation needs a recorded reason (senior-protocol rule 4). This applies to test
-location, comment style, and everything below.
+deviation needs a recorded reason (senior-protocol rule 4).
 
-Scope: §§1–3, 6–9, 11–13, and 15 assume the default TypeScript stack. On any
-stack (Unity/C#, plain React, …) these always apply: §4 Comments, §5 File
-headers (adapt comment syntax), §10 Git, §14 Design principles, §16 Done
-checklist (substitute the stack's own typecheck/lint/test commands). For
-non-TS stacks the architect records the equivalents — naming, lint, test
-runner — in team/architecture.md.
+Then read the language file for each language in team/architecture.md ## Stack —
+only those: `typescript.md`, `csharp.md`, `rust.md` beside this file. A language
+with no file here: its conventions are in team/architecture.md ## Conventions —
+the architect translates these core rules into it once, at design time, from the
+ecosystem's official style guide, with native ✗/✓ examples in the language files'
+format. Agents use that one translation; never re-translate per task.
 
-## 1. TypeScript
+Tooling first: every rule a linter, formatter, or compiler can check is enforced
+by config and CI (each language file lists them). The prose rules are the ones no
+tool can check — those are what review is for.
 
-Strict config (non-negotiable):
+## Naming
 
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "exactOptionalPropertyTypes": true,
-    "isolatedModules": true,
-    "target": "ES2022",
-    "moduleResolution": "bundler"
-  }
-}
-```
-
-Rules: No `any`. No `!`. No enums — use `as const` or discriminated unions. No default exports outside framework files. Explicit return types on all exported functions. `import type` for type-only imports. `satisfies` over `as`. Never `React.FC`.
-
-## 2. File naming
-
-All filenames and folders: kebab-case. Barrel `index.ts` only when imported in 3+ places.
-
-| Content | Example |
-|---|---|
-| Component | `workout-editor.tsx` |
-| Hook | `use-current-user.ts` |
-| Utility | `format-duration.ts` |
-| Types | `workout-types.ts` |
-| Test | `workout-editor.test.tsx` |
-| Config | `tailwind.config.ts` |
-
-## 3. Naming conventions
-
-Functions: verb + noun, camelCase, no abbreviations.
+- Names come from team/architecture.md ## Glossary. One name per domain concept,
+  everywhere — code, tests, branches, commits. A banned synonym is a defect. A
+  new domain concept is proposed in the plan, never invented in code.
+- Casing follows the language file.
+- Functions: verb + noun, no abbreviations. The verb says what happens:
 
 | Verb | Use for |
 |---|---|
@@ -71,84 +44,144 @@ Functions: verb + noun, camelCase, no abbreviations.
 | `calculate` | Compute derived value |
 | `build` | Construct complex object |
 | `handle` | Event handler only |
-| `on` | Callback prop only |
+| `on` | Callback prop / event only |
 
-Booleans: `is` / `has` / `can` / `should` / `did` prefix always.
+- Booleans: `is` / `has` / `can` / `should` / `did` prefix, in the language's casing.
+- A name that needs a comment to explain it is the wrong name — rename it.
 
-Constants: `SCREAMING_SNAKE_CASE`. All live in `src/constants.ts`, grouped by domain with `// ─── Label ───` dividers. Design tokens (colors, spacing, radii) are not constants — they live in Tailwind config.
+```
+Glossary: Workout — a planned set of exercises · banned: session, routine, training
 
-## 4. Comments
-
-Comments explain **why**, never **what**. If you need to explain what the code does, rename it.
-
-Comment for: business rule rationale, non-obvious workarounds, external links, TODO/FIXME with owner.
-
-Never comment: restating the code, self-documenting TS, section dividers inside components.
-
-Keep them short. One or two lines. No multi-paragraph module docs or block banners — a comment that runs to a paragraph is a design smell: split the code or move the rationale to the Decisions block. The header in §5 is the only structured doc a file carries.
-
-TODO format: `// TODO(user): <what and why deferred>` — owner always required.
-
-## 5. File headers
-
-Every file gets a header after `'use client'` and before imports. Line comments only.
-
-```typescript
-// purpose: <one sentence>
-// owns:    <key exports>
-// deps:    <key internal dependencies>
-// caution: <optional — real gotchas only>
+✗ fetchSession(id)      ✗ getWkt(id)         ✗ data, info, temp, handleStuff
+✓ getWorkout(id)        ✓ listWorkouts()     ✓ isWorkoutComplete
 ```
 
-`purpose`, `owns`, `deps` always present. `caution` only when there is a genuine non-obvious constraint.
+What review blocks, in every language (casing per the language file):
 
-## 6. Components
+| Written | Why it fails | Fix |
+|---|---|---|
+| `getSession(id)` | `session` is a banned synonym of Workout | `getWorkout(workoutId)` |
+| `calcVol(s)` | abbreviations | `calculateVolume(sets)` |
+| `totalLoad` | `load`, `total` banned for Volume | `volume` |
+| `data`, `info`, `result2`, `temp` | names that say nothing | the concept: `workout`, `volumeSummary` |
+| `warmup` (boolean) | no boolean prefix | `isWarmUp` / `IsWarmUp` / `is_warm_up` |
+| `processWorkout()` | vague verb | the table's verb: `validateWorkout()` |
+| `m_store`, `strName` | Hungarian notation | `_workoutStore` (C#), `name` |
 
-File order: `'use client'` → external imports → internal imports → local types → named export component (hooks → derived state → handlers → early returns → render).
+## Comments
 
-Rules:
-- One component per file. Named export only.
-- No inline styles — Tailwind only.
-- No magic numbers — `src/constants.ts`.
-- No DB/API calls — through hooks or server actions.
-- No business logic — lives in the feature's `lib/`, shared `lib/`, or `convex/`.
-- Props type above component, never inline.
-- Max 150 lines. `'use client'` only when needed.
-- No prop drilling beyond 2 levels.
-- Forms: `react-hook-form` + `zod`. Modals: Esc + backdrop dismissible. Loading: skeletons.
+Comments explain **why**, never **what**. If you need to explain what the code
+does, rename or split it.
 
-## 7. Hooks
+Comment for: business rule rationale, non-obvious workarounds, external links,
+TODO/FIXME with owner. Nothing else — most functions carry no comment at all.
 
-One hook per file. Returns object not array (except simple toggles). Explicit return type always. No raw DB/fetch calls.
+Length: **one line**, placed directly above the line it explains. A reason that
+truly needs more:
+- the language has doc comments (TSDoc `/** */`, C# `///`, Rust `///`, Python
+  docstrings) → put it in the doc comment of the function or type it belongs to,
+  not as an inline block. Summary line first, then the why — what a caller must
+  know that the signature doesn't say. Never restate parameter names or types.
+- no doc comments → 2–3 inline lines at most.
+Either way, past a few lines is a design smell: split the code or move the
+rationale to the Decisions block.
 
-## 8. Error handling
+Never:
+- restate the code, or narrate it step by step;
+- changelog comments — `added for login`, `now uses the cache`, `fixed bug where…`.
+  History lives in git, not in the file;
+- ticket, plan, or team/ references — `see US-12`, `per the plan`. team/ is local
+  and plans are gone after merge: the comment would point nowhere. State the
+  reason itself;
+- comments addressed to the reviewer or the User — `as requested`, `note: …`;
+- commented-out code — delete it; git has it;
+- section dividers or banners inside a file.
 
-Default: Result type. Errors are values, not exceptions.
+TODO format: `TODO(user): <what and why deferred>` — owner always required.
 
-```typescript
-export type Result<T, E = AppError> =
-  | { ok: true; value: T }
-  | { ok: false; error: E }
+What gets a comment (each language file's Reference example shows it in code):
 
-export const ok = <T>(value: T): Result<T> => ({ ok: true, value })
-export const err = <E = AppError>(error: E): Result<never, E> => ({ ok: false, error })
+| Where | Comment | Why |
+|---|---|---|
+| Top of the file | header line | why the file exists |
+| A function whose business rule needs 2+ lines | doc comment on the function | the rule lives on the declaration, not in the body |
+| A constant or literal hiding a reason (`40`, a timeout) | one line, at its definition | the number alone doesn't say why |
+| A line that looks pointless or wrong (a cast, a workaround) | one line above it | it would get "fixed" by the next reader |
+| A function, field, or type whose name says it all | none | the name is the documentation |
+| A signature that tells the caller everything | none | the doc comment would only restate it |
+
+Expect a few comment lines per screen of code, each saying what the code can't.
+
+```
+✗ narrating, changelog, ticket ref, dead code — and a block where none is needed:
+    // added for US-12 per the plan
+    // loop over the sets and add up the reps
+    // fixed: was returning null before
+    // const legacyTotal = sumLegacy(sets)
+    function calculateVolume(sets) {
+      return sets.filter(isWorkingSet).reduce(addRepsTimesWeight, 0)
+    }
+
+✓ one line, only where the reason isn't in the code:
+    function calculateVolume(sets) {
+      // Warm-up sets don't count toward volume — coach's rule.
+      return sets.filter(isWorkingSet).reduce(addRepsTimesWeight, 0)
+    }
+
+✓ a longer reason goes in the doc comment, not the body (syntax: language file):
+    /**
+     * Pushes workouts to Strava in batches.
+     * Strava bans the token for an hour past 100 req/15 min, so batches stay at 90
+     * and the first 429 stops the run instead of retrying.
+     */
+    function syncWorkoutsToStrava(workouts) { … }
 ```
 
-try/catch allowed only at top-level boundaries (route handlers, framework glue). Never nested. Never in loops or hot paths. Never swallow silently. Always use `ok()` / `err()` helpers.
+## File header
 
-## 9. Tests
+One line at the top of each source file (after any directive the framework
+requires first, such as `'use client'`), in the language's line-comment syntax:
 
-Runner: Bun. Tests live in `tests/` mirroring `src/` exactly — never co-located. Use `@/` imports. `describe` by function, `it` as sentence. No snapshot tests.
+```
+// <why this file exists — one sentence>
+// caution: <optional — a real non-obvious constraint only>
+```
 
-Separate test tree on **every** stack (not just TS) — this rule survives repo precedent (§0). A separate file/dir, never inline with source: no Rust `#[cfg(test)] mod tests` in the source file, no `Component.test.tsx` beside the component. The architect records the stack's separate-tree convention (e.g. Rust `tests/` integration crate, or a dedicated `*_test` module tree) in team/architecture.md; if the ecosystem's idiom is genuinely inline, that is a deviation with a recorded reason, not a default.
+No exports list, no dependency list — the code already says both.
 
-Ownership: the tester agent authors all tests (unit + criteria). Dev never writes tests — dev's obligation is to keep the existing suite green.
+```
+✗ // purpose: workout utils · owns: calculateVolume, formatDuration · deps: @/lib/units
+✓ // Derives training volume from logged sets — the number every progress chart reads.
+✓ // caution: runs inside the sync worker; no DOM access.
+```
 
-## 10. Git
+## Design principles
+
+- **KISS**: Simplest solution that works. Exception: measurable perf/UX improvement earns complexity — but only when you can point to the specific problem it solves right now.
+- **YAGNI**: Build for the current story. Generalise at the second real use case, not before.
+- **Single Responsibility**: One file, one function, one component — one job. Split if you need "and".
+- **Composition over Inheritance**: Compose small units. Inherit only where the framework requires it.
+- **Fail Fast**: Validate at the boundary — every external input is checked where it enters. Never `null` to signal failure.
+- **Colocation**: Keep code close to where it's used — new code starts in its feature folder. Promote to shared at 3+ feature uses. Duplication is cheaper than the wrong abstraction.
+
+## Tests
+
+Separate test tree on **every** stack — this rule survives repo precedent. A
+separate file/dir, never inline with source: no Rust `#[cfg(test)] mod tests` in
+the source file, no `Component.test.tsx` beside the component. The language file
+names the stack's tree; if the ecosystem's idiom is genuinely inline, that is a
+deviation with a recorded reason, not a default.
+
+Ownership: the tester agent authors all tests (unit + criteria + flow). Dev never
+writes tests — dev's obligation is to keep the existing suite green.
+
+## Git
 
 Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `docs-f<n>` (feature docs); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
 
 Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch carries it. Squash merge to `main` via auto-merge; PRs require green CI.
+
+Commit body: terse. The subject line alone is enough for most commits; add a body only to record *why* a non-obvious change was made, in one or two lines — never a multi-paragraph changelog restating the diff.
 
 PR title: the squash commit on `main`, so the same `<type>: <description>` format. PR body, lean:
 
@@ -164,53 +197,32 @@ Nothing else in the body, and never a link into team/ (local only).
 
 Author: the User's own git and gh identity. No `Co-Authored-By` trailers and no "Generated with" lines in commits, PR titles, PR bodies, or review comments.
 
-Commit body: terse. The subject line alone is enough for most commits; add a body only to record *why* a non-obvious change was made, in one or two lines — never a multi-paragraph changelog restating the diff.
+## Post-change checklist
 
-## 11. Path aliases
+Run after every code addition or edit. Fix violations inline — never report and
+leave for the user.
 
-`@/` always over deep relative paths. `{ "paths": { "@/*": ["./*"] } }`
-
-## 12. Import order
-
-5 groups, blank line between each: Node built-ins → external packages → internal shared/lib → internal types → local same-folder.
-
-## 13. Restrictions (never break)
-
-No commits to `main` directly. No `any`. No inline styles. No secrets in code. No `console.log` committed. No default exports outside framework files. No business logic in components. No DB calls in components. No nested try/catch. No try/catch in hot paths. No `@ts-ignore` without comment. No barrel `index.ts` unless imported 3+ places.
-
-## 14. Design principles
-
-- **KISS**: Simplest solution that works. Exception: measurable perf/UX improvement earns complexity — but only when you can point to the specific problem it solves right now.
-- **YAGNI**: Build for the current story. Generalise at the second real use case, not before.
-- **Single Responsibility**: One file, one function, one component — one job. Split if you need "and".
-- **Composition over Inheritance**: Compose with hooks and components. Never extend base classes.
-- **Fail Fast**: Validate at the boundary. Zod on all external input. `v.*` on all Convex args. Never `null` to signal failure.
-- **Colocation**: Keep code close to where it's used — new code starts in its feature folder. Promote to shared `lib/` at 3+ feature uses. Duplication is cheaper than the wrong abstraction.
-
-## 15. Post-change checklist
-
-Run after every code addition or edit. Fix violations inline — never report and leave for the user.
-
-**Step 1 — Biome**: `bun run check` — must exit zero errors before self-review.
-
-**Step 2 — Self-review**:
+1. **Tooling** — the language file's lint + format check, exit 0. This covers
+   every mechanical rule; don't re-check those by eye.
+2. **Self-review** — what no tool checks:
 
 ```
-File: header present, imports in 5-group order
-TS: no any, no !, explicit return types, import type used
-Components: no inline styles, no business logic, no DB calls, no prop drilling >2, <150 lines, use client only if needed, named export
-Naming: verb+noun functions, boolean prefixes, kebab-case files/folders
-Constants: new constants in correct section of constants.ts, no design tokens in constants
-Errors: Result type used, no nested try/catch, no silent swallowing
-Tests: existing suite passes; no tests deleted or weakened (authoring: tester agent)
-Security: no secrets, no sensitive data in URLs
+Names: glossary terms only, no banned synonyms; verb+noun functions; boolean prefixes
+Comments: why-not-what; inline = one line; longer → doc comment (3 inline max without one); none where the code says it; no changelog, ticket/plan refs, reviewer notes, commented-out code
+Header: one purpose line present
+Design: one job per file/function; no speculative abstraction; boundary input validated
+Errors: the language file's error model; nothing swallowed silently
+Tests: existing suite passes; no tests deleted or weakened (authoring: tester)
+Security: no secrets, no sensitive data in URLs or logs
+Language file: its review-only rules
 ```
 
-## 16. Before opening the PR
+## Before opening the PR
 
 ```
-[ ] bun run typecheck — zero errors
-[ ] bun test — zero failures
+[ ] typecheck/build — zero errors (language file's command)
+[ ] test suite — zero failures
+[ ] lint + format check — zero errors
 [ ] Post-change checklist passed
 [ ] Acceptance criteria fully met
 [ ] Branch clean — no unrelated changes

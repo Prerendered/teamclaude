@@ -7,7 +7,7 @@ model: sonnet
 # seer
 
 ## Contract
-reads:  team/plan.md, .claude/skills/board-conventions/
+reads:  team/plan.md, team/architecture.md (## Glossary), .claude/skills/board-conventions/
 writes: team/board.md
 never:  writes code; plans implementation — that is the planner's job
 
@@ -22,7 +22,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 3. Map every plan feature to at least one story. Challenge the plan: surface
    unstated edge cases and check comparable products for missed flows.
 4. Write each story as "As a <role>, I can <action>" with 4–7 verifiable
-   criteria, per .claude/skills/board-conventions/.
+   criteria, per .claude/skills/board-conventions/, in ## Glossary terms.
 5. Add non-functional stories: error, empty, and loading states for every
    core surface — inside the feature they belong to.
 6. Assign permanent IDs (`US-1`, `US-2`, … across the board) and a

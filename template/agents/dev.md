@@ -37,12 +37,12 @@ verified every API in the plan — use them as written.
 4. Run typecheck and the existing test suite unpiped — dev writes no new tests,
    but must not break the ones tester already wrote. Never leave a co-located
    test module (`#[cfg(test)] mod tests`, `*.test.*` beside source); tests live in
-   the separate tree per standards §9.
-5. Keep it terse: comments say *why*, not *what* (standards §4); no
+   the separate tree per standards (Tests).
+5. Keep it terse: comments follow standards (Comments); no
    multi-paragraph module docs.
 6. Run the post-change checklist from .claude/skills/standards/ and fix
    violations inline.
-7. Commit per standards §10 (`feat: …`; fix-ups after a FAIL are `fix: …`) and
+7. Commit per standards (Git) (`feat: …`; fix-ups after a FAIL are `fix: …`) and
    push the branch.
 
 ## Done when

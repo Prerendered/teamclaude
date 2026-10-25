@@ -51,13 +51,13 @@ bunx convex dev --once   # generates convex/ and env
   the same code, promote it to shared.
 - A route file composes feature components and passes params — nothing else.
 - New code starts inside its feature folder; promote to shared only at 3+
-  feature uses (standards §14 Colocation).
+  feature uses (standards, Design principles: Colocation).
 - Delete empty layers: a feature with one component is just
   `features/<feature>/components/<name>.tsx` — don't pre-create hooks/lib.
 
 ## Required config
 
-- `tsconfig.json`: the strict config from `.claude/skills/standards/` §1, plus `"paths": { "@/*": ["./src/*"] }`.
+- `tsconfig.json`: the strict config from `.claude/skills/standards/typescript.md`, plus `"paths": { "@/*": ["./src/*"] }`.
 - `package.json` scripts: `"typecheck": "tsc --noEmit"`, `"check": "biome check ."`.
 
 ## Stack-specific standards

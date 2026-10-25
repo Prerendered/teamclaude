@@ -110,7 +110,10 @@ agent; handle each one's return as it lands.
 (`git rev-parse origin/main`) in state.md, and dispatch planner (plan mode) for
 **every** story of the feature at once — plans only read code, so they never
 conflict, and dev never waits on a planner later. Scout briefs for stories in
-unfamiliar code go first, in parallel.
+unfamiliar code go first, in parallel. When the plans are in, merge their
+`## New terms` into architecture.md ## Glossary (you are its only writer while
+agents run in parallel); two plans naming the same concept differently → pick
+one, amend the other plan.
 
 ### Proportionality — scale ceremony to blast radius
 Size after picking, never instead of it. The full Story loop is for cards with
@@ -164,7 +167,7 @@ tiers); more than 2 returns from the same step → escalate to User.
    dev → 5.
 6. **PR** — Overseer, from the worktree: `gh pr create --base main --title
    "<type>: <description>" --body-file <file>`, title and lean body per
-   standards §10. The title becomes the squash commit on main.
+   standards (Git). The title becomes the squash commit on main.
 7. **PR review** — dispatch reviewer (pr mode); also security (card mode) if the
    card touches auth, input, data, or dependencies. Both post on the PR. A blocker,
    or a high/critical finding → dev pushes a fix → back to 5. Security medium/low →
@@ -225,7 +228,7 @@ fix the contract, do not widen the payload ad hoc.
 
 **One worktree per ticket (mandatory).** At pick, the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards §10). tester's write phase gets
+(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards (Git)). tester's write phase gets
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.

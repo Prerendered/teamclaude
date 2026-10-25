@@ -11,7 +11,8 @@ description: CI workflow, merge settings, and branch protection templates — lo
   with the tag as a trailing comment. Never pin a mutable tag.
 - Only include jobs the project actually uses — no template leftovers.
 - Cache dependencies for the stack's package manager.
-- CI must run typecheck + tests on every PR.
+- CI must run lint + format check, typecheck, and tests on every PR — the
+  commands from each language's standards file.
 
 ## CI template (Bun stacks)
 
@@ -36,6 +37,7 @@ jobs:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'bun.lockb') }}
       - run: bun install --frozen-lockfile
+      - run: bun run check
       - run: bun run typecheck
       - run: bun test
 ```
