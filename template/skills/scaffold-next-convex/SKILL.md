@@ -7,8 +7,12 @@ description: Default web stack — Next.js + Convex + shadcn/ui + Tailwind + Bun
 
 ## Setup
 
+Generate outside the repo, then copy in (architect design mode step 7):
+
 ```bash
-bun create next-app@latest . --typescript --tailwind --app --src-dir
+bun create next-app@latest <tmp>/app --typescript --tailwind --app --src-dir
+# copy <tmp>/app in (no .git/, no node_modules/, .gitignore merged), then in the repo:
+bun install
 bun add convex
 bunx shadcn@latest init
 bunx convex dev --once   # generates convex/ and env
@@ -66,6 +70,17 @@ folder below with a role gets its README.md per that section.
 
 - `tsconfig.json`: the strict config from `.claude/skills/standards/typescript.md`, plus `"paths": { "@/*": ["./src/*"] }`.
 - `package.json` scripts: `"typecheck": "tsc --noEmit"`, `"check": "biome check ."`.
+
+## Local setup (architecture.md ## Local setup)
+
+- untracked: `.env.local` — the Convex deployment and URL `convex dev` writes.
+- shared: the Convex dev deployment. `convex dev` pushes the worktree's functions
+  to it, so two worktrees on one cloud dev deployment overwrite each other's
+  backend. Isolate: each worktree runs its own local deployment (state lives in
+  the worktree's `.convex/`). The CLI's local-deployment commands have changed
+  across releases — verify the current one in the Convex CLI docs (rule 1).
+- shared: the Next.js dev port, and the Playwright `webServer` port — one per
+  worktree, passed by env var, never hard-coded.
 
 ## Stack-specific standards
 

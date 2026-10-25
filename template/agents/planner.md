@@ -15,7 +15,8 @@ never:  writes or edits code; changes a story's criteria or scope; answers a fea
 Follow .claude/skills/senior-protocol/SKILL.md.
 
 ## Procedure — plan mode
-1. Read the story, team/architecture.md, and the code it touches at origin/main.
+1. Read the story, team/architecture.md, and the code it touches in `Workdir` —
+   the main checkout, synced to origin/main by the Overseer.
    Match existing idioms; a new pattern needs a Decisions line. Plans are
    written for a whole feature at once — a story listed in `Needs` is not merged
    yet: plan against its plan's Contract, not its code.
@@ -48,7 +49,8 @@ story in its Needs got a Contract Amendment.
 3. Set Base to the current origin/main.
 
 ## Procedure — consult mode
-1. Read the QUESTION, the plan, and the code dev has committed so far.
+1. Read the QUESTION, the plan, and the code dev has committed so far — in
+   `Workdir`, the story worktree.
 2. Answer it, verifying in docs or code (rule 1) — never from memory.
 3. The answer would change behavior, criteria, or scope → stop and return it
    reclassified as `feature`, with the options; do not decide it.

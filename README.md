@@ -1,6 +1,6 @@
 # teamclaude
 
-A versioned repo of Claude Code agents, skills, and artifact templates that installs into any project with one command — turning Claude Code into a senior software team that takes a project from intake (greenfield) or a codebase survey (brownfield) to merged code with only two approval gates.
+A versioned repo of Claude Code agents, skills, and artifact templates that installs into any project with one command — turning Claude Code into a senior software team that takes a project from intake (greenfield) or a codebase survey (brownfield) to merged code. You approve the plan, pick the stack, and test each finished feature; the team does the rest.
 
 ## Install
 
@@ -15,7 +15,7 @@ Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `te
 to `.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
 `.worktrees/` (one checkout per story in flight) is always ignored.
 The **stack is chosen at the Tech gate** (the architect researches options, you pick), so no flags are needed. `npx` works identically.
-Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
+Pin a release with a ref: `bunx github:Prerendered/teamclaude#v2.0 init`.
 
 | Flag | Meaning |
 |---|---|
@@ -68,9 +68,10 @@ ENTRY
    ▼
 DELIVERY LOOP — one feature at a time (open critical/high bug first)
    │
-   │  feature start: planner writes every story's plan at once (opus/fable)
+   │  feature start: planner writes every story's plan at once (opus/fable),
+   │  then one contract PR lands the feature's new types and constants
    │  then every READY story (Needs merged, no shared files) runs at once, up to wip: 4
-   │  per story, in its own worktree on branch us-<n>-<slug>
+   │  per story, in its own bootstrapped worktree (env + deps) on branch us-<n>-<slug>
    ├► dev ‖ tester ─ in parallel from the plan: dev builds, tester writes the tests
    │              └ QUESTION: technical → planner on fable · feature → User
    ├► tester ─── runs its tests against dev's code (flow tests per criterion)
@@ -130,7 +131,9 @@ PR titles are `<type>: <description>` — the PR title becomes the single squash
 main. PR bodies are lean: the ticket line, a short summary, the criteria checklist.
 Everything is authored under your own git/gh identity with no AI attribution lines, so
 reviews are posted as PR comments (GitHub won't let an author approve their own PR) and
-green CI is the merge gate.
+green CI is the merge gate. A private repo on GitHub Free has no branch protection or
+auto-merge; the team detects that and runs in manual merge mode, where the Overseer
+waits for green CI and an up-to-date branch before it squash-merges.
 
 After Gate 1 and the Tech gate the team runs autonomously. It comes back to you to test each finished
 feature, for feature questions (behavior, criteria, scope), for review loops past 2, and

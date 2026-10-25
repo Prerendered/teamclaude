@@ -70,12 +70,23 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    scaffold and fill its config and loader hook (the skill says what).
    Write each language's lint/format config from its standards file's "Enforced
    by tooling" section, verifying rule names against the installed tool.
+   Write architecture.md ## Local setup: the untracked files a fresh worktree
+   needs (env, local config — names only), the install command, and every dev
+   resource parallel worktrees would share — dev-server and test ports, a dev
+   database or hosted dev deployment — each with how a worktree gets its own
+   instance, or `isolate: none` when it can't.
 7. Scaffold the repo on disk. The tree must match architecture.md exactly. With
    or without a scaffold skill, it follows the standards Project layout —
    `features/`, `lib/`, `types/`, `constants/`, `tests/` mirroring `src/` with
    `flows/` and `tools/`, `.mcp.json` at the root — and ships the structure
    READMEs (root `## Project structure` + one per folder). A reference repo that
    differs is not followed on these points.
+   The repo already holds `.claude/`, `CLAUDE.md`, `team/`, and `.gitignore`, and
+   generators refuse a non-empty directory or overwrite what is there. Run the
+   generator in a temp dir outside the repo, then copy its output in without its
+   `.git/` and `node_modules/`, and reinstall. Never delete, move, or overwrite
+   the team's files; merge the generated `.gitignore` into the existing one so its
+   `/team/` and `/.worktrees/` lines survive.
 8. Commit it on main as `chore: scaffold <stack>` (standards, Git) and push — the
    one direct commit to main; cicd protects main next, and every later change
    arrives through a PR.
@@ -88,7 +99,9 @@ budget: 6 options per use case, verified with 1–2 current sources each.
 - Design mode: team/architecture.md has all sections filled, including a
   Decisions line per chosen tech, a Languages line, a Glossary entry for every
   domain concept in plan.md, lint/format config for every language, and a ## Verification line with a readable log
-  source for every runtime component; `.mcp.json` lists only pinned servers it uses. Scaffold skill present: every deviation from it
+  source for every runtime component, and a ## Local setup naming every untracked
+  file and shared dev resource; `.mcp.json` lists only pinned servers it uses;
+  `.gitignore` still carries `/team/` and `/.worktrees/`. Scaffold skill present: every deviation from it
   has a recorded reason. Absent: the structure's source references are recorded
   and the library section for the stack exists. The scaffold on disk matches the
   Structure section exactly, follows the standards Project layout with its READMEs,

@@ -7,8 +7,12 @@ description: Chrome extension stack — Vite + React + Manifest V3 (crxjs). Load
 
 ## Setup
 
+Generate outside the repo, then copy in (architect design mode step 7):
+
 ```bash
-bun create vite@latest . --template react-ts
+bun create vite@latest <tmp>/app --template react-ts
+# copy <tmp>/app in (no .git/, no node_modules/, .gitignore merged), then in the repo:
+bun install
 bun add -D @crxjs/vite-plugin
 ```
 

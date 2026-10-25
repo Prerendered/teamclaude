@@ -24,15 +24,17 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    the commit SHA (tag as a trailing comment).
 4. Configure dependency caching for the stack's package manager.
 5. Set branch protection on main: no direct pushes, CI required to merge, no
-   required approvals.
-6. Apply the merge settings from .claude/skills/gh-workflows/: auto-merge on,
-   squash only, branch deleted on merge, squash commit = PR title with a blank
-   body.
+   required approvals. Unavailable on this repo's plan → manual merge mode per
+   .claude/skills/gh-workflows/.
+6. Apply the merge settings from .claude/skills/gh-workflows/: auto-merge on
+   (not in manual mode), squash only, branch deleted on merge, squash commit =
+   PR title with a blank body.
 
 ## Done when
 - CI runs typecheck + tests on a test PR and passes.
 - Every action pinned to a SHA verified current.
-- Direct push to main is rejected.
+- Direct push to main is rejected — or `Merge mode: manual` is reported with the
+  403 that proves protection is unavailable.
 - Repo settings read back as the gh-workflows merge settings.
 - No workflow steps reference tools the project does not use.
 
@@ -41,7 +43,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 CICD — setup
 Workflows: <list>
 Actions pinned: <action@sha (tag)>
-Branch protection: <rules applied>
+Branch protection: <rules applied | unavailable — <API error>>
+Merge mode: <auto | manual>
 Merge settings: <read-back values>
 Self-check: <test PR result>
 ```

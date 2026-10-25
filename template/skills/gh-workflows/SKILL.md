@@ -71,6 +71,17 @@ gh api -X PUT "repos/{owner}/{repo}/branches/main/protection" \
 Result to verify: direct push to main rejected; PRs require the `check` job green.
 No required approvals: the same identity opens and reviews every PR, and GitHub
 does not let an author approve their own PR — reviews are comments, CI is the gate.
+CI with several jobs → list each job name under `contexts`.
+
+### No protection available → manual merge mode
+
+A private repo on GitHub Free gets neither branch protection nor auto-merge
+(both are public-only on Free) [ref: https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/automatically-merging-a-pull-request].
+The protection call then fails with a 403 asking to upgrade or make the repo
+public. Don't retry another way and don't change visibility or plan — that is
+the User's call. Skip `--enable-auto-merge`, apply the rest of the merge
+settings (they work on every plan), and report `Merge mode: manual`. The
+Overseer then gates each merge itself (CLAUDE.md, Story loop step 8).
 
 ## Merge settings
 

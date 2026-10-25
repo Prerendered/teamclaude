@@ -35,8 +35,10 @@ with the same columns:
   below.
 - Needs: the story IDs it truly depends on (`—` if none). A story is ready once
   every ID in Needs is Done. Ordering preference goes in `#`, never in Needs.
-- Files: the story's expected file footprint — the Overseer uses it for the
-  parallel-dispatch check (shared file with a card in flight = wait).
+- Files: the story's file footprint — the Overseer uses it for the
+  parallel-dispatch check (shared file with a card in flight = wait). seer
+  writes an estimate; at Feature start the Overseer replaces it with the plan's
+  Files, minus the contract PR's files.
 - WIP cap: `wip:` in team/state.md (default 4) cards In Progress + In Review
   across both boards.
 - board.md holds stories and refactor cards only. Bugs go on bug-board.md.

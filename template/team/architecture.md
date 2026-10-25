@@ -27,6 +27,14 @@
 <!-- per runtime component: <component> — run: <command> — drive: <MCP | CLI | bridge>
      — logs: <file | command | MCP tool>. See .claude/skills/e2e-verification/. -->
 
+## Local setup
+<!-- what a fresh worktree needs beyond what git tracks; the Overseer applies it to
+     every worktree before dispatch:
+     untracked: <file> — <what it holds> (copied from the main checkout; names, never values)
+     install: <command>
+     shared: <dev resource: port, dev DB, dev deployment> — isolate: <per-worktree port |
+             own local instance | none → cards using it never run in parallel> -->
+
 ## Conventions
 <!-- only for a language with no standards/<language>.md: the core standards
      translated once into it — casing, files, error model, tests tree, lint/format

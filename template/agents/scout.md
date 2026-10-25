@@ -25,7 +25,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    the names the code already uses — competing names for one concept are a
    candidate refactor card. Fill ## Verification per .claude/skills/e2e-verification/
    from what exists — how each component runs and where its logs go; a component
-   with no readable log source is a candidate refactor card.
+   with no readable log source is a candidate refactor card. Fill
+   ## Local setup: the untracked files a fresh checkout needs (env files, local
+   config — names only, never values), the install command, and every dev
+   resource two checkouts would share (ports, a dev database or deployment).
 3. Write team/map.md per its template: where things live, entry points, key
    modules, naming/idiom conventions, and danger zones (fragile or
    high-blast-radius code).
@@ -36,7 +39,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    cards.
 
 ## Procedure — brief mode
-1. Scope: the subsystem or files named in the dispatch — nothing wider.
+1. Scope: the subsystem or files named in the dispatch — nothing wider. Read
+   them in `Workdir` (the main checkout, synced to origin/main).
 2. Trace how it works, what calls it, what it depends on, and the convention to
    match.
 3. Return a focused brief — enough for dev or refactor to work without re-reading

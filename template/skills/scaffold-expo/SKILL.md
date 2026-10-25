@@ -7,8 +7,11 @@ description: Mobile stack — Expo + expo-router (+ expo-sqlite when offline-fir
 
 ## Setup
 
+Generate outside the repo, then copy in (architect design mode step 7):
+
 ```bash
-bunx create-expo-app@latest . --template default   # includes expo-router + TS
+bunx create-expo-app@latest <tmp>/app --template default   # includes expo-router + TS
+# copy <tmp>/app in (no .git/, no node_modules/, .gitignore merged), then: bun install
 ```
 
 ## Folder tree (feature-first, big-project layout)

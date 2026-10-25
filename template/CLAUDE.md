@@ -76,7 +76,12 @@ Greenfield:
 3. Dispatch architect (design mode) → team/architecture.md + scaffold on the
    chosen tech. The scaffold is the one commit made straight to main — every
    later change arrives through a PR.
-4. Dispatch cicd → repo, CI, branch protection, auto-merge.
+4. Dispatch cicd → repo, CI, branch protection, auto-merge. Record its
+   `Merge mode` in state.md as `merge: auto | manual`. Manual (a private repo on
+   GitHub Free has neither branch protection nor auto-merge) → tell the User once:
+   direct pushes to main are not blocked, so the Overseer's merge checks are the
+   only gate; a public repo or a paid plan restores auto. Their call — never
+   change visibility or plan yourself.
 5. Dispatch designer (UI stacks only) → team/design.md + tokens.
 6. Dispatch seer → team/board.md: features in delivery order, stories per feature.
 Brownfield: architecture.md + map.md already exist from Onboarding — skip
@@ -94,26 +99,36 @@ In Progress plus In Review. Fill every free slot, in this order:
 1. Open critical/high bugs on bug-board.md — something merged is broken, and
    building on it compounds the damage.
 2. **Ready stories** of the current feature, lowest # first. Ready = every story in
-   its `Needs` is Done (merged), and its Files share nothing with any card in
-   flight. Never start a later feature's story while the current one has Backlog
-   left — a finished feature is what the User can test, and that feedback steers
-   the next one.
+   its `Needs` is Done (merged), its Files share nothing with any card in flight,
+   and it uses no shared dev resource marked `isolate: none` (architecture.md
+   ## Local setup) that a card in flight uses. Never start a later feature's
+   story while the current one has Backlog left — a finished feature is what the
+   User can test, and that feedback steers the next one.
 3. Open medium/low bugs, once the current feature's stories are merged, before
    Feature acceptance.
 A Backlog story that is not ready waits; it is never forced in by order alone.
 Per picked card: run the Invariant check on its flow, size its ceremony
-(Proportionality), create its worktrees (Dispatch rules), and move the row to
-In Progress. Then dispatch all picked cards together — each as a background
-agent; handle each one's return as it lands.
+(Proportionality), and move the row to In Progress. Then create each card's
+worktrees (Dispatch rules) and dispatch all picked cards together — each as a
+background agent; handle each one's return as it lands. A story card waits until
+its feature's contract PR has merged (or was skipped): a story worktree cut
+before that lacks the contract's types — never dispatch into one. Bug cards
+don't wait.
 
-**Feature start.** When a feature's first card is picked: record its start commit
+**Feature start.** When a feature's first card is picked: sync the main checkout
+(Dispatch rules), record its start commit
 (`git rev-parse origin/main`) in state.md, and dispatch planner (plan mode) for
 **every** story of the feature at once — plans only read code, so they never
 conflict, and dev never waits on a planner later. Scout briefs for stories in
 unfamiliar code go first, in parallel. When the plans are in, merge their
 `## New terms` into architecture.md ## Glossary (you are its only writer while
 agents run in parallel); two plans naming the same concept differently → pick
-one, amend the other plan.
+one, amend the other plan. Then replace each story's board `Files` with its
+plan's `## Files`, minus the files the contract PR owns: seer's Files was an
+estimate, and the plan's is the footprint every ready check uses from here on.
+Re-run the ready check on the cards already picked — one that now overlaps
+another goes back to Backlog. A refresh that changes a plan's Files updates
+its row too.
 
 **Feature contract.** Then, before any story builds: dispatch dev on branch
 `contract-f<n>` (its own worktree) to add every `[contract]` type and constant
@@ -183,7 +198,13 @@ tiers); more than 2 returns from the same step → escalate to User.
    or a high/critical finding → dev pushes a fix → back to 5. Security medium/low →
    bug-board; should-fix and nit stay on the PR and do not block.
 8. **Merge** — `gh pr merge <pr> --squash --auto --delete-branch`; GitHub merges
-   once the required CI check is green. Confirm `gh pr view <pr> --json state` is
+   once the required CI check is green. `merge: manual` in state.md (no branch
+   protection or auto-merge on this repo) → the Overseer is the gate GitHub
+   would have been: `gh pr checks <pr> --watch --fail-fast` exits 0; `git fetch
+   origin && git merge-base --is-ancestor origin/main origin/<branch>` exits 0
+   (non-zero = behind → `gh pr update-branch <pr>`, watch again); then `gh pr
+   merge <pr> --squash --delete-branch`. Never merge on red, pending, or behind.
+   Confirm `gh pr view <pr> --json state` is
    `MERGED` — that, not "pushed", is the green signal (senior-protocol rule 5). CI
    red → read the failing job, back to dev → 5. Branch behind main after another
    merge → `gh pr update-branch <pr>`; a conflict → back to dev. Merged → row to
@@ -223,10 +244,11 @@ Agents receive only their contract inputs, never conversation history:
 ```
 Task: <story title + acceptance criteria verbatim | bug card row verbatim>
 Team dir: <absolute path to the main checkout's team/>
-Workdir: <absolute path to the story worktree>      (Story loop agents)
+Workdir: <absolute path>  (the story worktree: Story loop agents, planner consult mode;
+                           the synced main checkout: planner plan/refresh, scout)
 Plan: team/plans/US-<n>.md                          (dev, tester, reviewer)
 Context files: team/architecture.md, .claude/skills/standards/
-Branch: <us-n-slug | bn-slug | docs-fn>
+Branch: <us-n-slug | bn-slug | contract-fn | docs-fn>
 Return: summary + files touched + self-check result
 ```
 `Team dir` is mandatory on every dispatch. team/ is gitignored, so it does not
@@ -236,12 +258,26 @@ tree.
 If an agent needs something not in its reads:, that is an Overseer bug —
 fix the contract, do not widen the payload ad hoc.
 
-**One worktree per ticket (mandatory).** At pick, the Overseer runs
+**Sync the main checkout.** After the scaffold, everything reaches main through a
+PR, so the main checkout falls behind with every merge. Before Feature start and
+before every planner (plan or refresh mode) or scout dispatch, in the main
+checkout: `git fetch origin && git merge --ff-only origin/main`. Never sync while
+a planner or scout is still reading it. ff-only refuses → local commits or edits
+clash with main: a branch-state anomaly (below) — stop and resolve it with the
+User, never reset or stash it away.
+
+**One worktree per ticket (mandatory).** Before a ticket's first dispatch — for a
+story, only once its feature's contract PR has merged — the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards (Git)). tester's write phase gets
+(ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>`, branch per standards (Git)). tester's write phase gets
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
+Bootstrap every new worktree per architecture.md ## Local setup before dispatch:
+copy each `untracked:` file from the main checkout, run `install:`, and give each
+`shared:` resource the worktree's own instance (port, local deployment) as
+recorded. A fresh worktree holds only what git tracks — no `.env`, no installed
+deps — and an agent that finds them missing invents values or skips the check.
 Every agent on that story gets it as `Workdir` and works only there. Dispatch them
 *without* `isolation: "worktree"`: a per-agent worktree cannot check out a branch
 another worktree holds, which breaks the dev → tester → dev handoff on one branch.

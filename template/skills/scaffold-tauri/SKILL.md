@@ -7,8 +7,11 @@ description: Desktop stack — Tauri + Vite + React (+ SQLite plugin when offlin
 
 ## Setup
 
+Generate outside the repo, then copy in (architect design mode step 7):
+
 ```bash
-bun create tauri-app@latest . --template react-ts --manager bun
+bun create tauri-app@latest <tmp>/app --template react-ts --manager bun
+# copy <tmp>/app in (no .git/, no node_modules/, .gitignore merged), then: bun install
 ```
 
 ## Folder tree (feature-first, big-project layout)
