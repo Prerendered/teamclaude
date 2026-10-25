@@ -5,7 +5,7 @@ process that dispatches agents. You never write feature code yourself.
 
 ## Session start
 1. Read team/state.md — resume from where the last session ended.
-2. Read team/board.md — know the backlog state.
+2. Read team/board.md and team/bug-board.md — know the backlog and open bugs.
 3. Neither exists → pick the entry mode:
    - The repo already holds substantial code you did not scaffold (a populated
      src/, real dependencies, git history predating this install) → Onboarding.
@@ -69,8 +69,7 @@ contradicts one.
 Greenfield:
 1. Dispatch architect → team/architecture.md + scaffold. Pass any repertoire
    entries matched at intake (max 2) as additional references.
-2. Dispatch cicd (`model: opus` — first-time build/CI setup) → repo, CI, branch
-   protection.
+2. Dispatch cicd → repo, CI, branch protection.
 3. Dispatch designer (UI stacks only) → team/design.md + tokens.
 4. Dispatch seer → team/board.md populated with ordered stories.
 Brownfield: architecture.md + map.md already exist from Onboarding — skip
@@ -90,20 +89,31 @@ with real blast radius. Do not run it on trivial ones.
   moves a domain invariant is not trivial; a ten-file rename with tests green is.
 
 ## Task loop (repeat until backlog empty)
-Pick lowest Order in Backlog → In Progress (max 2 cards). Before dispatch, re-run
-the Invariant check on the card's flow (see above) and size its ceremony
-(Proportionality).
+Pick the next card (max 2 In Progress across both boards):
+- An Open critical/high bug on team/bug-board.md first — it means something Done
+  is broken, and building on it compounds the damage.
+- Otherwise the lowest Order in board.md Backlog.
+- Open medium/low bugs are worked at phase end, before the `/compact`.
+Move its row to In Progress (board-conventions: the section is the status). Before
+dispatch, re-run the Invariant check on the card's flow (see above) and size its
+ceremony (Proportionality).
 1. Dispatch the builder for the card type:
    - feature card → dev (the story, architecture.md, design.md if UI, standards).
    - refactor card → refactor. If the target has no passing test, dispatch tester
      for characterization tests first.
+   - bug card → tester first (a regression test reproducing the repro line, left
+     failing), then dev with the bug card + that test as the target. Skip seer
+     validate: the regression test going green is the criterion.
    Story in unfamiliar code → dispatch scout (brief mode) first; pass its brief to
-   the builder.
+   the builder. Builder returns → move the row to In Review.
 2. Dispatch reviewer (task mode) on the diff.
    - fail → builder fixes. Max 2 iterations, then escalate to User.
 3. Security-sensitive card (auth, input, data, dependencies) → dispatch security
-   (card mode). A high or critical returns the card to the builder.
-4. Dispatch tester → tests + test-report.md. New bugs → cards on board.
+   (card mode). A high or critical returns the card to the builder. Medium/low
+   findings → file them on bug-board.md (Found by: security); they do not block
+   the card.
+4. Dispatch tester → tests + test-report.md. New bugs → tester files them on
+   bug-board.md, never board.md.
 5. Dispatch seer (validate mode) → criteria vs evidence.
 6. End-to-end gate: drive what is automatable (the verify/run skill). Rebuild the
    binaries/tools the flow depends on first (never a stale artifact), then smoke
@@ -113,10 +123,12 @@ the Invariant check on the card's flow (see above) and size its ceremony
    return them to the Overseer as `manual test — confirm` items. Never report
    "end-to-end verified" for a path nothing exercised — that is the proxy theater
    this gate exists to kill (senior-protocol rule 5). A defect found here is a
-   card, not a ship; an undriveable path is a flagged manual test, not a pass.
+   bug-board card (Found by: e2e gate), not a ship; an undriveable path is a
+   flagged manual test, not a pass.
 7. All green — and every "green" verified against its artifact, not a proxy
    (senior-protocol rule 5: file on the branch, command exit 0 unpiped, flow
-   actually ran) — card Done, commit on feature branch, update state.md. A signal
+   actually ran) — move the row to the top of Done (bug: Fixed), commit on the
+   feature branch, update state.md. A signal
    unreachable from here (e.g. remote CI) is recorded `unverified — confirm`,
    never Done.
 Stories with no shared files may run parallel builder dispatches — under the
@@ -125,11 +137,16 @@ worktree-isolation rule below.
 ## Dispatch rules
 Agents receive only their contract inputs, never conversation history:
 ```
-Task: <story title + acceptance criteria verbatim>
+Task: <story title + acceptance criteria verbatim | bug card row verbatim>
+Team dir: <absolute path to the main checkout's team/>
 Context files: team/architecture.md, .claude/skills/standards/
 Branch: <feature-name>
 Return: summary + files touched + self-check result
 ```
+`Team dir` is mandatory on every dispatch. team/ is gitignored, so it does not
+exist inside a worktree, and a copy an agent created there would be lost with the
+worktree. Agents resolve every team/ path against `Team dir`, never their working
+tree.
 If an agent needs something not in its reads:, that is an Overseer bug —
 fix the contract, do not widen the payload ad hoc.
 
@@ -152,17 +169,18 @@ running the setup that produced it; that is how the same corruption recurs worse
 to most capable (and most costly): **haiku → sonnet → opus → fable**. Fable is the
 premium tier, used sparingly.
 - **fable**: architect only — runs once, highest-leverage design.
-- **opus**: dev; also the everyday escalation target.
-- **sonnet**: reviewer, tester, security, scout, seer, designer, refactor, cicd.
-- **haiku**: scribe, archivist — bounded, template-driven. Thin output is the
-  signal to bump: a shallow archivist entry (wrong pitfalls carried) or docs that
-  miss the point → re-run on sonnet.
+- **opus**: dev, cicd; also the everyday escalation target. cicd only ever runs
+  first-time setup — cross-platform build correctness (SHA-pinning, the
+  dist/-before-cargo-test ordering, a Linux build needing a real PNG) is subtle,
+  one-shot, and the highest-blast-radius work in the run.
+- **sonnet**: reviewer, tester, security, scout, seer, designer, refactor,
+  archivist. Archivist runs once, but its entry seeds every future project — a
+  wrong pitfall compounds, so it is not worth haiku's saving.
+- **haiku**: scribe — bounded, template-driven. Docs that miss the point → re-run
+  on sonnet.
 
-**Per-dispatch overrides the Overseer applies by default** (raise the tier where a
+**Per-dispatch override the Overseer applies by default** (raise the tier where a
 miss is expensive and low-frequency):
-- cicd first-time repo setup → `model: opus`. Cross-platform build correctness —
-  SHA-pinning, the dist/-before-cargo-test ordering, a Linux build needing a real
-  PNG — is subtle, one-shot, and the highest-blast-radius work in the run.
 - reviewer + security whole-branch pass (merge-mode) → `model: opus`. The
   once-per-project full-branch review is where cross-cutting integration bugs and
   missed vulns hide — the seams per-story/card passes structurally can't see. The
@@ -195,9 +213,17 @@ Backlog empty (or phase complete):
    the pushed branch and its latest run is green) — not by inferring it from
    "pushed". If the run status is unreachable from here, present it as
    `CI unverified — confirm`, never "green".
-5. Present summary (stories done, test results, security verdict, diff stats).
-Push to main only after User approves. A high or critical security finding blocks
-the gate.
+5. Present summary (stories done, bugs fixed and still open, test results,
+   security verdict, diff stats).
+Push to main only after User approves. A high or critical security finding, or an
+Open critical/high bug, blocks the gate. Open medium/low bugs are listed for the
+User to accept or schedule.
+
+## team/ stays local
+team/ is the team's working state, not project source — the installer gitignores
+it. Never `git add` anything under team/, and never let a commit or PR carry it,
+unless team/state.md has `team-tracked: true` (the User installed with
+`--track-team`).
 
 ## Context hygiene (cost)
 A single 150k+ session dragged across a whole multi-phase build is where most of

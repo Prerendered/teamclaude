@@ -15,11 +15,14 @@ FORCE=0
 UPDATE=0
 REPERTOIRE=""
 LOCAL=0
+TRACK_TEAM=0
+IGNORE_MARK="# teamclaude working state — local only"
+IGNORE_RULE="/team/"
 
 usage() {
   cat <<EOF
-Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--local] [--force]
-       install.sh --update [--stack <name>] [--version <tag>] [--local]
+Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--track-team] [--local] [--force]
+       install.sh --update [--stack <name>] [--version <tag>] [--track-team] [--local]
 
 Flags:
   --update            Refresh an existing install. Replaces the template's agents,
@@ -36,7 +39,10 @@ Flags:
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo. When
                       set, the team consults past projects at intake and saves
                       this one at wrap. Omit to disable the feature.
-  --local             Install from the template/ next to this script instead of
+  --track-team        Commit team/ with the project. By default team/ is local
+                      working state and gets added to .gitignore. Recorded in
+                      team/state.md, so --update keeps it.
+  --local            Install from the template/ next to this script instead of
                       cloning. Use when running from a checkout — required for
                       private repos, where raw/anonymous fetch does not work.
   --force             Reinstall over an existing .claude/ directory.
@@ -56,6 +62,7 @@ while [ $# -gt 0 ]; do
     --local)      LOCAL=1; shift ;;
     --force)      FORCE=1; shift ;;
     --update)     UPDATE=1; shift ;;
+    --track-team) TRACK_TEAM=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "unknown flag: $1" ;;
   esac
@@ -74,6 +81,7 @@ if [ "$UPDATE" -eq 1 ]; then
   fi
   FROM="$(sed -n 's/^team-version:[[:space:]]*//p' team/state.md | head -n 1)"
   FROM="${FROM:-unknown}"
+  grep -q '^team-tracked:[[:space:]]*true' team/state.md && TRACK_TEAM=1
 elif [ -d .claude ] && [ "$FORCE" -eq 0 ]; then
   fail ".claude/ already exists — re-run with --update to refresh it, or --force to reinstall"
 fi
@@ -117,10 +125,24 @@ else
   [ -d "$SRC" ] || fail "template/ missing in $VERSION — corrupt release?"
 fi
 
-# Install agents + skills into .claude/, Overseer into repo root.
-rm -rf .claude
-mkdir -p .claude
-cp -R "$SRC/agents" "$SRC/skills" .claude/
+# Replace each agent/skill the template ships, one by one. A blanket rm of .claude/
+# would also take settings.json and any agent or skill the project added itself.
+for kind in agents skills; do
+  mkdir -p ".claude/$kind"
+  for entry in "$SRC/$kind"/*; do
+    name="$(basename "$entry")"
+    rm -rf ".claude/$kind/$name"
+    cp -R "$entry" ".claude/$kind/$name"
+  done
+done
+
+# CLAUDE.md is template-owned, but a project may have appended to it — keep a copy
+# before replacing a changed one on update/force.
+BACKED_UP=0
+if [ -f CLAUDE.md ] && ! cmp -s "$SRC/CLAUDE.md" CLAUDE.md && { [ "$UPDATE" -eq 1 ] || [ "$FORCE" -eq 1 ]; }; then
+  cp CLAUDE.md CLAUDE.md.bak
+  BACKED_UP=1
+fi
 cp "$SRC/CLAUDE.md" ./CLAUDE.md
 
 # Stack chosen up front → keep only its scaffold skill (none for custom stacks).
@@ -136,9 +158,10 @@ fi
 
 # Seed team/ stubs — never clobber existing project state.
 mkdir -p team
+SEEDED=""
 for f in "$SRC"/team/*.md; do
   dest="team/$(basename "$f")"
-  [ -e "$dest" ] || cp "$f" "$dest"
+  [ -e "$dest" ] || { cp "$f" "$dest"; SEEDED="$SEEDED $(basename "$f")"; }
 done
 
 # Stamp the installed version into team/state.md.
@@ -169,7 +192,31 @@ if [ -n "$REPERTOIRE" ]; then
   fi
 fi
 
-if [ -z "$STACK" ]; then
+# team/ is local working state — gitignore it unless the user opted to track it.
+# Only the two lines we add are ever removed.
+if [ "$TRACK_TEAM" -eq 1 ]; then
+  grep -q '^team-tracked:' team/state.md \
+    || printf 'team-tracked: true\n%s\n' "$(cat team/state.md)" > team/state.md
+  if [ -f .gitignore ]; then
+    grep -vxF -e "$IGNORE_MARK" -e "$IGNORE_RULE" .gitignore > .gitignore.tmp || true
+    mv .gitignore.tmp .gitignore
+  fi
+elif ! { [ -f .gitignore ] && grep -qxE '[[:space:]]*/?team/?[[:space:]]*' .gitignore; }; then
+  if [ -s .gitignore ]; then
+    [ -z "$(tail -c 1 .gitignore)" ] || echo >> .gitignore
+    echo >> .gitignore
+  fi
+  printf '%s\n%s\n' "$IGNORE_MARK" "$IGNORE_RULE" >> .gitignore
+fi
+
+if [ "$UPDATE" -eq 1 ]; then
+  echo "teamclaude $FROM → $VERSION. Refreshed: .claude/agents, .claude/skills, CLAUDE.md."
+  if [ -n "$STACK" ]; then echo "stack: $STACK (from team/state.md unless overridden)."
+  else echo "stack: unset — all scaffold skills kept."; fi
+  [ "$BACKED_UP" -eq 0 ] || echo "CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Diff it if you had added to it."
+  [ -z "$SEEDED" ] || echo "new team/ stubs added:$SEEDED"
+  echo "Existing team/ artifacts and .claude/settings.json were not touched."
+elif [ -z "$STACK" ]; then
   echo "teamclaude $VERSION installed. Stack: chosen at intake (all scaffold skills kept)."
 else
   echo "teamclaude $VERSION installed (stack: $STACK)."
@@ -180,4 +227,14 @@ fi
 if [ -n "$REPERTOIRE" ]; then
   echo "repertoire: $REPERTOIRE — consulted at intake, saved at wrap."
 fi
-echo "Open Claude Code and say 'new project' to start intake."
+if [ "$TRACK_TEAM" -eq 1 ]; then
+  echo "team/: tracked in git (team-tracked: true)."
+else
+  echo "team/: local only — gitignored."
+  # An ignore rule does not untrack files that are already committed.
+  if [ -n "$(git ls-files -- team 2>/dev/null)" ]; then
+    echo "note: team/ is already committed — .gitignore does not untrack it. To drop it from the repo:"
+    echo "      git rm -r --cached team && git commit -m \"chore: stop tracking team/\""
+  fi
+fi
+[ "$UPDATE" -eq 1 ] || echo "Open Claude Code and say 'new project' to start intake."

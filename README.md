@@ -11,6 +11,8 @@ bunx github:Prerendered/teamclaude init
 ```
 
 Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
+`team/` is the team's local working state (plan, boards, reports) and is added to
+`.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
 The **stack is chosen during intake**, so no flags are needed. `npx` works identically.
 Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
 
@@ -18,7 +20,13 @@ Pin a release with a ref: `bunx github:Prerendered/teamclaude#v1.0 init`.
 |---|---|
 | `--stack <name>` | Optional. The stack is normally decided at intake — pass this only to lock it up front. Scaffolded stacks: `next-convex`, `tauri`, `expo`, `extension` (keeps only the matching scaffold skill). Any other name (`unity`, `react-spa`, …) installs without a scaffold. Omit to keep all scaffolds and let intake pick. |
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
-| `--force` | Overwrite an existing `.claude/` directory. |
+| `--track-team` | Optional. Commit `team/` with the project instead of gitignoring it. Recorded in `team/state.md`, so `update` keeps it. |
+| `--force` | `init` only. Reinstall over an existing `.claude/` directory. |
+
+**Updating** an existing install: `bunx github:Prerendered/teamclaude update`. It replaces the
+template's agents, skills, and `CLAUDE.md` (a changed `CLAUDE.md` is kept as `CLAUDE.md.bak`),
+seeds any new `team/` stubs, and leaves `.claude/settings.json`, your own agents/skills, and
+existing `team/` artifacts untouched. The bash installer's equivalent is `--update`.
 
 **Other ways to install**
 
@@ -55,14 +63,14 @@ ENTRY
    └─► seer ──────► board.md (stories, criteria, order)
    │
    ▼
-TASK LOOP (per card, lowest Order first)
+TASK LOOP (open critical/high bug first, else lowest Order)
    │
    ├► scout ──── brief mode: recon for unfamiliar code (on demand)
    ├► dev ────── feature card: implements on feature branch
    ├► refactor ─ refactor card: behavior-preserving cleanup, tests green before+after
    ├► reviewer ─ task mode ── fail ─► builder (max 2 loops → escalate)
    ├► security ─ security-sensitive card: card-mode review
-   ├► tester ─── tests + report ── bugs → new cards
+   ├► tester ─── tests + report ── bugs → bug-board.md
    ├► seer ───── validates criteria vs evidence
    └► Overseer ─ card → Done, commit, state.md, next card
    │
@@ -77,7 +85,13 @@ PROJECT WRAP (if a repertoire is configured)
    └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
-The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Between the two gates the team runs autonomously; it escalates only for review loops >2, ambiguous criteria, or destructive actions. A high or critical security finding blocks Gate 2.
+The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages.
+
+`team/board.md` holds stories in sections — In Progress, In Review, Backlog, Done — so live
+work is at the top and history sinks to the bottom. Bugs go on a separate
+`team/bug-board.md` (In Progress, Open, Fixed) with a severity and a one-line repro. An Open
+critical/high bug is fixed before the next story; medium/low are worked at phase end. Each
+bug is fixed test-first: tester writes a failing regression test, dev makes it pass. Between the two gates the team runs autonomously; it escalates only for review loops >2, ambiguous criteria, or destructive actions. A high or critical security finding blocks Gate 2.
 
 ## Agent roster
 
@@ -86,12 +100,12 @@ The main Claude Code session is the **Overseer** — the only process that dispa
 | `seer` | plan.md, board-conventions, test-report.md (validate mode) | board.md | writes code; marks Done without evidence |
 | `architect` | plan.md, stack skill, reference-library | architecture.md, scaffold | implements features; skips Decisions section |
 | `scout` | existing codebase, codebase-survey, standards | architecture.md, map.md, recon briefs | writes code; invents structure the code lacks |
-| `dev` | one story, architecture.md, design.md, standards | code on feature branch | touches board.md; edits other stories' files; writes tests |
+| `dev` | one story or bug card, architecture.md, design.md, standards | code on feature branch | touches either board; edits other stories' files; writes tests |
 | `refactor` | refactor card, target code, map.md, refactor-catalog, standards | refactored code on a branch | changes behavior; adds features; edits tests; refactors untested code |
 | `reviewer` | diff, standards, architecture.md | review-report.md | implements fixes; reviews own suggestions |
 | `security` | diff/branch, security-standards, architecture.md | security-report.md | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
-| `tester` | story criteria, code | tests/ (all tests, unit + criteria), test-report.md, bug cards | fixes code; deletes failing tests |
+| `tester` | story criteria or bug card, code | tests/ (all tests, unit + criteria, bug regression tests), test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
 | `scribe` | finished code, architecture.md, board.md | README.md, docs/ | changes code; documents unbuilt features |
 | `cicd` | plan.md, gh-workflows skill | .github/, repo config | touches application code |
 | `archivist` | team/ artifacts, state.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |

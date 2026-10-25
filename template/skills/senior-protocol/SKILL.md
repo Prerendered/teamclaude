@@ -13,6 +13,8 @@ description: The five rules every agent follows — load at the start of every d
 | 4 | Defaults are deviatable — with reason | Skills define defaults, not law. Deviate when the project demands it, and record the reason in the Decisions block. A skill default beats repo precedent: when the existing code contradicts a standard, follow the standard or ask — never silently inherit the debt. |
 | 5 | Verify the artifact, not the proxy | Report a result only after checking the thing itself — the file is on the branch, the command exited 0 unpiped, the behavior ran. Never let `\| tail`/`\| head` decide `$?` (the pipe's exit code hides the tool's). When the real signal is unreachable from here (e.g. remote CI), report `unverified — confirm`, never `done`. |
 
+team/ paths resolve against the `Team dir` in your dispatch, never your working tree — team/ is gitignored and absent from worktrees.
+
 Brevity binds output too: prose in summaries, comments, and commit bodies stays terse — say why, not what, and stop. See the comment and commit rules in the standards skill.
 
 ## Decisions block format

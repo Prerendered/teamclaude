@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // teamclaude CLI — installs or updates the team template in the current project.
-//   bunx github:Prerendered/teamclaude init   [--stack next-convex] [--repertoire <url>] [--force]
-//   bunx github:Prerendered/teamclaude update [--stack next-convex] [--repertoire <url>]
+//   bunx github:Prerendered/teamclaude init   [--stack next-convex] [--repertoire <url>] [--track-team] [--force]
+//   bunx github:Prerendered/teamclaude update [--stack next-convex] [--repertoire <url>] [--track-team]
 // Only template-owned paths are ever removed: .claude/settings.json, a project's
 // own agents/skills, and everything outside .claude/ survive both commands.
 // Cross-platform (no bash). Keep the install logic in sync with install.sh.
 import { promises as fs } from 'node:fs';
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,8 +19,8 @@ const VERSION = `v${JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'ut
 
 const fail = (msg) => { console.error(`error: ${msg}`); process.exit(1); };
 const usage = () =>
-  `Usage: teamclaude init   [--stack <name>] [--repertoire <url>] [--force]
-       teamclaude update [--stack <name>] [--repertoire <url>]
+  `Usage: teamclaude init   [--stack <name>] [--repertoire <url>] [--track-team] [--force]
+       teamclaude update [--stack <name>] [--repertoire <url>] [--track-team]
 
 Commands:
   init                Install the team into a project that has none.
@@ -35,6 +36,9 @@ Flags:
                       scaffold skills and let intake pick. On update, defaults to
                       the stack recorded in team/state.md.
   --repertoire <url>  Optional. Git URL of a cross-project repertoire repo.
+  --track-team        Commit team/ with the project. By default team/ is local
+                      working state and gets added to .gitignore. Recorded in
+                      team/state.md, so update keeps it.
   --force             init only. Reinstall over an existing .claude/ directory.`;
 
 // ── parse args ────────────────────────────────────────────────────────────────
@@ -45,12 +49,13 @@ if (argv[0] === '-v' || argv[0] === '--version') { console.log(VERSION); process
 const cmd = argv[0];
 if (cmd !== 'init' && cmd !== 'update') fail(`unknown command '${cmd ?? ''}'\n${usage()}`);
 
-let stack = '', repertoire = '', force = false;
+let stack = '', repertoire = '', force = false, trackTeam = false;
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--stack') stack = argv[++i] ?? '';
   else if (a === '--repertoire') repertoire = argv[++i] ?? '';
   else if (a === '--force') force = true;
+  else if (a === '--track-team') trackTeam = true;
   else fail(`unknown flag: ${a}\n${usage()}`);
 }
 if (force && cmd === 'update') fail('--force is not valid for update — update never removes files it did not install');
@@ -122,12 +127,48 @@ const stampState = async () => {
   state = upsert(state, 'team-version', VERSION);
   if (stack) state = upsert(state, 'stack', stack);
   if (repertoire) state = upsert(state, 'repertoire', repertoire);
+  if (trackTeam) state = upsert(state, 'team-tracked', 'true');
   await fs.writeFile('team/state.md', state);
 };
 
-const readStack = async () => {
+const readState = async (key) => {
   if (!existsSync('team/state.md')) return '';
-  return (await read('team/state.md')).match(/^stack:\s*(.+)$/m)?.[1].trim() ?? '';
+  return (await read('team/state.md')).match(new RegExp(`^${key}:\\s*(.+)$`, 'm'))?.[1].trim() ?? '';
+};
+
+// team/ is the team's local working state — keep it out of the project remote
+// unless the user opted in. Only the two lines we add are ever removed.
+const IGNORE_MARK = '# teamclaude working state — local only';
+const IGNORE_RULE = '/team/';
+const syncGitignore = async () => {
+  const had = existsSync('.gitignore') ? await read('.gitignore') : '';
+  const lines = had.split(/\r?\n/);
+  if (trackTeam) {
+    const kept = lines.filter((l) => l !== IGNORE_MARK && l !== IGNORE_RULE);
+    if (kept.length !== lines.length) await fs.writeFile('.gitignore', kept.join('\n'));
+    return;
+  }
+  if (lines.some((l) => ['team', 'team/', '/team', '/team/'].includes(l.trim()))) return;
+  const lead = !had ? '' : had.endsWith('\n') ? '\n' : '\n\n';
+  await fs.writeFile('.gitignore', `${had}${lead}${IGNORE_MARK}\n${IGNORE_RULE}\n`);
+};
+
+// An ignore rule does not untrack files that are already committed.
+const warnIfTracked = () => {
+  if (trackTeam) return;
+  let tracked = '';
+  try {
+    tracked = execFileSync('git', ['ls-files', '--', 'team'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch { return; } // not a git repo, or git missing
+  if (tracked.trim()) {
+    console.log('note: team/ is already committed — .gitignore does not untrack it. To drop it from the repo:');
+    console.log('      git rm -r --cached team && git commit -m "chore: stop tracking team/"');
+  }
+};
+
+const reportTeam = () => {
+  console.log(trackTeam ? 'team/: tracked in git (team-tracked: true).' : 'team/: local only — gitignored.');
+  warnIfTracked();
 };
 
 const reportPreserved = (preserved) => {
@@ -144,6 +185,7 @@ const init = async () => {
   await writeOverseer({ backup: force });
   await seedTeam();
   await stampState();
+  await syncGitignore();
 
   if (stack) {
     console.log(`teamclaude ${VERSION} installed (stack: ${stack}).`);
@@ -152,6 +194,7 @@ const init = async () => {
     console.log(`teamclaude ${VERSION} installed. Stack: chosen at intake (all scaffold skills kept).`);
   }
   if (repertoire) console.log(`repertoire: ${repertoire} — consulted at intake, saved at wrap.`);
+  reportTeam();
   reportPreserved(preserved);
   console.log("Open Claude Code and say 'new project' to start intake.");
 };
@@ -162,18 +205,21 @@ const update = async () => {
     fail('no teamclaude install found here (need .claude/agents and team/state.md) — run `teamclaude init` first');
   }
   const from = (await read('team/state.md')).match(/^team-version:\s*(.+)$/m)?.[1].trim() ?? 'unknown';
-  stack = stack || (await readStack());
+  stack = stack || (await readState('stack'));
+  trackTeam = trackTeam || (await readState('team-tracked')) === 'true';
 
   const preserved = [...(await syncTree('agents')), ...(await syncTree('skills'))];
   await pruneScaffolds(stack);
   const backedUp = await writeOverseer({ backup: true });
   const seeded = await seedTeam();
   await stampState();
+  await syncGitignore();
 
   console.log(`teamclaude ${from} → ${VERSION}. Refreshed: .claude/agents, .claude/skills, CLAUDE.md.`);
   console.log(stack ? `stack: ${stack} (from team/state.md unless overridden).` : 'stack: unset — all scaffold skills kept.');
   if (backedUp) console.log('CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Diff it if you had added to it.');
   if (seeded.length) console.log(`new team/ stubs added: ${seeded.join(', ')}`);
+  reportTeam();
   reportPreserved(preserved);
   console.log('Existing team/ artifacts and .claude/settings.json were not touched.');
 };

@@ -9,5 +9,5 @@
 ### Risk assessment
 - <failure class considered> — <finding | clear>
 ### Cards filed
-- <bug card # + one-line repro>
+- <B# + severity + one-line repro>
 -->

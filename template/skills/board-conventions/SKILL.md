@@ -1,23 +1,54 @@
 ---
 name: board-conventions
-description: Story format, acceptance criteria rules, phases, and order numbers for team/board.md — load when creating or editing the board.
+description: Story and bug card formats, acceptance criteria, phases, order numbers, and section layout for team/board.md and team/bug-board.md — load when creating or editing either board.
 ---
 
 # Board conventions
 
-## board.md template
+## board.md layout
+
+Sections in this fixed order, each holding one table with the same columns:
 
 ```markdown
-# Board — [Project]
-| # | Story | Status | Priority | Phase | Files | Acceptance criteria |
-|---|-------|--------|----------|-------|-------|---------------------|
+## In Progress
+## In Review
+## Backlog
+## Done
+| # | Story | Priority | Phase | Files | Acceptance criteria |
 ```
 
-- Status: `Backlog` / `In Progress` / `In Review` / `Done`. New stories always start `Backlog`.
+- The section is the status — there is no Status column. Changing status means
+  moving the row to that section, never editing a field.
+- Backlog rows sorted by `#` ascending. Done rows newest-first (a card moving to
+  Done goes to the top of Done), so the board reads top-down from live work to
+  history.
+- New stories always start in Backlog.
 - `#` is the Order number — dependency-sorted, see below.
 - Files: the story's expected file footprint — the Overseer uses it for the
   parallel-dispatch check (shared file = sequential).
-- WIP limit: never more than 2 cards In Progress — finish before starting new.
+- WIP limit: never more than 2 cards In Progress across both boards — finish
+  before starting new.
+- board.md holds stories and refactor cards only. Bugs go on bug-board.md.
+- Pre-2.0 board (single table with a Status column) → restructure into sections on
+  first edit and move any bug cards to bug-board.md.
+
+## bug-board.md layout
+
+Sections `## In Progress`, `## Open`, `## Fixed`, same rules (section is the
+status; Fixed newest-first). Columns:
+
+```markdown
+| ID | Bug | Severity | Found by | Story | Files | Repro |
+```
+
+- ID: `B1`, `B2`, … — never reused.
+- Severity: critical (data loss, crash or invariant broken in a core flow) / high
+  (core flow broken, Done story's criterion fails) / medium (secondary flow broken
+  or workaround exists) / low (cosmetic, edge case).
+- Open rows sorted by severity, then ID.
+- Found by: tester / e2e gate / security / User.
+- Story: the `#` of the story it breaks, or `—`.
+- Repro: one line — the exact input or steps and the observed vs expected result.
 
 ## Story format
 
