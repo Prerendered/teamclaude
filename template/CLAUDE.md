@@ -115,6 +115,16 @@ unfamiliar code go first, in parallel. When the plans are in, merge their
 agents run in parallel); two plans naming the same concept differently → pick
 one, amend the other plan.
 
+**Feature contract.** Then, before any story builds: dispatch dev on branch
+`contract-f<n>` (its own worktree) to add every `[contract]` type and constant
+from the feature's plans to `types/` and `constants/` — declarations only, no
+behavior. It goes through Story loop steps 5–8 (check, PR, review, merge) like any
+card, minus tester. Stories then branch from a main that already has them, and
+their Files never include those files — so parallel stories never collide there.
+A story that discovers a type the contract missed raises a QUESTION; the
+Amendment adds that file to the story's Files, and the Overseer serializes it.
+Skip the contract PR when the plans add no types or constants.
+
 ### Proportionality — scale ceremony to blast radius
 Size after picking, never instead of it. The full Story loop is for cards with
 real blast radius.

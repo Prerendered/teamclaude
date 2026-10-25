@@ -43,6 +43,9 @@ print_stdout = "deny"
   return `Result<T, E>` with a serializable `E` — never panic across the IPC
   boundary.
 - **Booleans**: `is_`/`has_`/`can_`/`should_` prefix.
+- **Types and constants** (core standards): `src/types/<domain>.rs` and
+  `src/constants/<domain>.rs`, declared as modules in `types/mod.rs` /
+  `constants/mod.rs`. Error enums stay with the module that returns them.
 - **Doc comments**: `///` on the item (`//!` for a module) when a reason outgrows
   one inline line — summary line, blank `///`, then the why. Use `# Errors` /
   `# Panics` sections only when they add information beyond the signature.
@@ -50,7 +53,8 @@ print_stdout = "deny"
   `// SAFETY:` comment stating the invariant upheld.
 - **Ownership**: borrow before clone; a `.clone()` to satisfy the borrow checker
   needs a reason. No `Rc<RefCell<…>>` where plain ownership works.
-- **Tests**: integration tests in the crate's `tests/` directory — no
+- **Tests**: integration tests in the crate's own `tests/` (e.g. `src-tauri/tests/`,
+  mirroring `src-tauri/src/`, files `<module>_test.rs`) — Cargo fixes this location; no
   `#[cfg(test)] mod tests` in source files (core standards, Tests). Expose what
   tests need through the public API, not `pub(crate)` test hooks.
 
@@ -108,16 +112,28 @@ pub fn get_workout_command(
 The shape every Rust file aims for. Glossary: Workout, WorkoutSet, Volume.
 
 ```rust
-// src/workouts/volume.rs
-// Derives training volume from logged sets — the number every progress chart reads.
+// src/constants/workout.rs
+// Limits and defaults for workouts — every workout number lives here.
 
 /// Sync payloads over 1 MB are rejected; 40 sets keeps a workout well under it.
 pub const MAX_SETS_PER_WORKOUT: usize = 40;
+```
+
+```rust
+// src/types/workout.rs
+// The workout domain's shapes — the one place they're declared.
 
 pub struct VolumeSummary {
     pub volume: f64,
     pub working_set_count: usize,
 }
+```
+
+```rust
+// src/workouts/volume.rs
+// Derives training volume from logged sets — the number every progress chart reads.
+
+use crate::types::workout::{VolumeSummary, WorkoutSet};
 
 /// Training volume: reps × weight over working sets.
 ///

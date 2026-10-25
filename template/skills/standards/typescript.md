@@ -60,12 +60,14 @@ CI runs lint, typecheck, and tests on every PR (gh-workflows).
 - **Imports**: 5 groups, blank line between — Node built-ins → external packages →
   internal shared/lib → internal types → local same-folder. `@/` over deep
   relative paths.
-- **Constants**: `CONSTANT_CASE`, all in `src/constants.ts`, grouped by domain.
-  Design tokens (colors, spacing, radii) are not constants — they live in the
-  Tailwind config. No magic numbers in code.
+- **Types and constants** (core standards): `src/types/<domain>.ts` and
+  `src/constants/<domain>.ts`, `CONSTANT_CASE` constants; import via
+  `@/types/<domain>` / `@/constants/<domain>`. Types derived from a schema (a
+  Convex `Doc<'workouts'>`, a zod `z.infer`) are aliased there too, so code never
+  reaches into the schema for a type. Design tokens live in the Tailwind config.
 - **Components**: one per file, named export; props type above the component,
   never inline; file order `'use client'` → external imports → internal imports →
-  local types → component (hooks → derived state → handlers → early returns →
+  props type → component (hooks → derived state → handlers → early returns →
   render); no inline styles — Tailwind only; no DB/API calls — through hooks or
   server actions; no business logic — it lives in the feature's `lib/`, shared
   `lib/`, or `convex/`; max 150 lines; `'use client'` only when needed; no prop
@@ -77,7 +79,8 @@ CI runs lint, typecheck, and tests on every PR (gh-workflows).
   boundaries (route handlers, framework glue); never nested, never in loops or hot
   paths, never swallowed. External input validated with zod (Convex args with
   `v.*`) at the boundary.
-- **Tests**: Bun; `tests/` mirrors `src/` exactly; `@/` imports; `describe` by
+- **Tests**: Bun; `tests/` mirrors `src/` (core standards, Tests); files
+  `<name>.test.ts(x)` — the suffix is how Bun finds them; `@/` imports; `describe` by
   function, `it` as a sentence; no snapshot tests. Web UI flow tests: Playwright.
 
 ## Examples
@@ -166,18 +169,30 @@ export function useWorkout(workoutId: WorkoutId): UseWorkoutResult {
 The shape every TypeScript file aims for. Glossary: Workout, WorkoutSet, Volume.
 
 ```typescript
-// src/constants.ts (excerpt — constants grouped by domain, no divider banners)
+// src/constants/workout.ts
+// Limits and defaults for workouts — every workout number lives here.
+
 // Convex rejects documents over 1 MB; 40 sets keeps a workout well under it.
 export const MAX_SETS_PER_WORKOUT = 40
+```
+
+```typescript
+// src/types/workout.ts
+// The workout domain's shapes — the one place they're declared.
+
+import type { Doc, Id } from '@/convex/_generated/dataModel'
+
+export type Workout = Doc<'workouts'>
+export type WorkoutId = Id<'workouts'>
+export type WorkoutSet = Workout['sets'][number]
+export type VolumeSummary = { volume: number; workingSetCount: number }
 ```
 
 ```typescript
 // src/features/workouts/lib/calculate-volume.ts
 // Derives training volume from logged sets — the number every progress chart reads.
 
-import type { WorkoutSet } from '@/features/workouts/workout-types'
-
-type VolumeSummary = { volume: number; workingSetCount: number }
+import type { VolumeSummary, WorkoutSet } from '@/types/workout'
 
 /**
  * Training volume: reps × weight over working sets.
@@ -199,7 +214,8 @@ function isWorkingSet(workoutSet: WorkoutSet): boolean {
 // src/features/workouts/components/workout-logger.tsx
 // Lets the user log sets against a planned workout.
 
-import { MAX_SETS_PER_WORKOUT } from '@/constants'
+import { MAX_SETS_PER_WORKOUT } from '@/constants/workout'
+import type { WorkoutId } from '@/types/workout'
 
 type WorkoutLoggerProps = { workoutId: WorkoutId }
 

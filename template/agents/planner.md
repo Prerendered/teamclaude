@@ -27,7 +27,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 4. Pin the contract dev builds to: the exact files (new and changed), each public
    function or component with its signature, the data shapes, and the order of
    work. Every name uses architecture.md ## Glossary terms; a concept the
-   glossary lacks goes under ## New terms — never a synonym of an existing term. Leave internals (private helpers, local structure) to dev.
+   glossary lacks goes under ## New terms — never a synonym of an existing term.
+   Every type and constant names its file in `types/` / `constants/` (standards);
+   new ones are marked `[contract]` — they land in the feature's contract PR,
+   not the story. A new folder lists its README.md in Files. Leave internals (private helpers, local structure) to dev.
 5. Write the test list tester builds from: one case per criterion plus the edge
    cases and failure classes this design creates. Mark each user-facing
    criterion's case `[flow]` (e2e-verification layer 1). Game project: add to the

@@ -28,7 +28,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 4. Run the post-change checklist from .claude/skills/standards/ and the
    language files for the stack. Every violation cites its rule. A name that is
    a banned glossary synonym, or a domain concept missing from both the glossary
-   and the plan's New terms → blocker.
+   and the plan's New terms → blocker. A type or constant declared outside
+   `types/`/`constants/` (props excepted) or duplicated, or a new folder without
+   its README → blocker.
 
 ## Procedure — PR mode (step 7)
 1. Review the PR diff against .claude/skills/standards/ and team/architecture.md,

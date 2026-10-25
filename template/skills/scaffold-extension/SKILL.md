@@ -14,6 +14,10 @@ bun add -D @crxjs/vite-plugin
 
 ## Folder tree
 
+This stack's form of the standards Project layout (generic rules, READMEs,
+types/constants, tests) — the tree adds only what the stack needs. Every
+folder below with a role gets its README.md per that section.
+
 ```
 .
 ├── src/
@@ -23,9 +27,13 @@ bun add -D @crxjs/vite-plugin
 │   ├── popup/              # popup UI (React) — feature-first inside when it grows
 │   ├── options/            # options page if needed
 │   ├── features/           # domain logic shared across contexts, one folder per feature
-│   ├── lib/                # cross-cutting only: result.ts + messaging.ts (typed message bus)
-│   └── constants.ts
-├── tests/
+│   ├── types/              # one file per glossary domain — every type except props
+│   ├── constants/          # one file per glossary domain — CONSTANT_CASE
+│   └── lib/                # cross-cutting only: result.ts + messaging.ts (typed message bus)
+├── tests/                  # mirrors src/
+│   ├── flows/              # flow tests, one folder per glossary domain
+│   └── tools/              # test tooling: tools/mcp/<server>/ — never imported by app code
+├── .mcp.json               # project MCP servers, pinned (e2e-verification)
 ├── tsconfig.json           # strict config from skills/standards
 ├── vite.config.ts
 └── package.json

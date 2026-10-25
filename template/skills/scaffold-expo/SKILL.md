@@ -13,6 +13,10 @@ bunx create-expo-app@latest . --template default   # includes expo-router + TS
 
 ## Folder tree (feature-first, big-project layout)
 
+This stack's form of the standards Project layout (generic rules, READMEs,
+types/constants, tests) — the tree adds only what the stack needs. Every
+folder below with a role gets its README.md per that section.
+
 ```
 .
 ├── app/                    # expo-router file routes only — thin, compose features
@@ -23,14 +27,17 @@ bunx create-expo-app@latest . --template default   # includes expo-router + TS
 │   │   └── <feature>/
 │   │       ├── components/
 │   │       ├── hooks/
-│   │       ├── lib/
-│   │       └── <feature>-types.ts
+│   │       └── lib/
 │   ├── components/
 │   │   └── ui/             # shared primitives only
+│   ├── types/              # one file per glossary domain — every type except props
+│   ├── constants/          # one file per glossary domain — CONSTANT_CASE
 │   ├── hooks/              # cross-cutting hooks only
-│   ├── lib/                # cross-cutting: result.ts + db.ts (single SQLite access point)
-│   └── constants.ts
-├── tests/                  # mirrors src/ exactly
+│   └── lib/                # cross-cutting: result.ts + db.ts (single SQLite access point)
+├── tests/                  # mirrors src/
+│   ├── flows/              # flow tests, one folder per glossary domain
+│   └── tools/              # test tooling: tools/mcp/<server>/ — never imported by app code
+├── .mcp.json               # project MCP servers, pinned (e2e-verification)
 ├── tsconfig.json           # strict config from skills/standards
 ├── app.json
 └── package.json

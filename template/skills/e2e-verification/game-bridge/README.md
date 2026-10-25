@@ -10,22 +10,30 @@ per story. Protocol: one JSON line per request over `127.0.0.1:<port>`,
 
 | From | To (in the project) |
 |---|---|
-| `game/GameBridge.cs` | the mod's source, e.g. `src/<Mod>/Dev/GameBridge.cs` |
-| `mcp/server.mjs`, `mcp/fake-game.mjs`, `mcp/package.json` | `tools/game-bridge-mcp/` |
-| `mcp/bridge.config.example.json` | `tools/game-bridge-mcp/bridge.config.json`, filled in |
+| `game/GameBridge.cs` | `tests/tools/bridge/GameBridge.cs` |
+| `mcp/server.mjs`, `mcp/fake-game.mjs`, `mcp/package.json` | `tests/tools/mcp/game-bridge/` |
+| `mcp/bridge.config.example.json` | `tests/tools/mcp/game-bridge/bridge.config.json`, filled in |
 
 Register it in `.mcp.json`:
 ```json
-"game-bridge": { "command": "node", "args": ["tools/game-bridge-mcp/server.mjs"] }
+"game-bridge": { "command": "node", "args": ["tests/tools/mcp/game-bridge/server.mjs"] }
 ```
-and run `npm install` in `tools/game-bridge-mcp/` as part of setup (commit its
+and run `npm install` in `tests/tools/mcp/game-bridge/` as part of setup (commit its
 lockfile; `node_modules/` stays gitignored).
 
 ## Fill in (per project)
 
-1. **Dev-only build** — define `TEAMCLAUDE_BRIDGE` in the Debug configuration
-   only (`<DefineConstants>$(DefineConstants);TEAMCLAUDE_BRIDGE</DefineConstants>`
-   under the Debug PropertyGroup). Release builds must not contain the bridge.
+1. **Dev-only build** — in the mod's .csproj, Debug only: link the file and
+   define the guard, so a Release build cannot contain the bridge:
+   ```xml
+   <ItemGroup Condition="'$(Configuration)'=='Debug'">
+     <Compile Include="../../tests/tools/bridge/GameBridge.cs" />
+   </ItemGroup>
+   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+     <DefineConstants>$(DefineConstants);TEAMCLAUDE_BRIDGE</DefineConstants>
+   </PropertyGroup>
+   ```
+   Adjust the relative path to where the .csproj sits.
 2. **Loader hooks** — in the mod's entry point (`#if TEAMCLAUDE_BRIDGE`):
    `GameBridge.Start(port, version)` on init, `GameBridge.Pump()` from the
    loader's per-frame main-thread update callback, `GameBridge.Log(...)` from the
@@ -43,6 +51,6 @@ lockfile; `node_modules/` stays gitignored).
 
 ## Test without the game
 
-`node tools/game-bridge-mcp/fake-game.mjs` serves the same protocol with fake
+`node tests/tools/mcp/game-bridge/fake-game.mjs` serves the same protocol with fake
 state on the same port — use it to check the MCP wiring and a verifier flow
 before the real game is involved.

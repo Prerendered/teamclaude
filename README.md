@@ -123,6 +123,8 @@ design principles, git — plus one file per language (`typescript`, `csharp`, `
 casing, error model, and short ✗/✓ examples. Every rule a linter or compiler can check is enforced
 by config in CI; the prose covers only what review must catch.
 
+**Project layout** (standards, same for every stack): `src/` holds `features/<domain>/`, `lib/`, `types/<domain>` and `constants/<domain>` — every type and constant has one home, and a feature’s new ones land first in a small contract PR so parallel stories never collide. `tests/` at the root mirrors `src/` path for path, with `tests/flows/` for flow tests and `tests/tools/` for test tooling (MCP servers, the game bridge). Logs are never written to disk. Every folder carries a short README and the root README has a Project structure section, so a new dev or a fresh Claude session can find their way without `team/`.
+
 **GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). Commits and
 PR titles are `<type>: <description>` — the PR title becomes the single squash commit on
 main. PR bodies are lean: the ticket line, a short summary, the criteria checklist.

@@ -30,7 +30,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    modules, naming/idiom conventions, and danger zones (fragile or
    high-blast-radius code).
 4. Flag drift from .claude/skills/standards/ as candidate refactor cards — name
-   them, never fix them.
+   them, never fix them. Tests outside the standards Tests layout (co-located,
+   or in a tree that does not mirror `src/`), types or constants scattered
+   outside `types/`/`constants/`, and missing structure READMEs are always
+   cards.
 
 ## Procedure — brief mode
 1. Scope: the subsystem or files named in the dispatch — nothing wider.

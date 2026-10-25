@@ -70,7 +70,12 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    scaffold and fill its config and loader hook (the skill says what).
    Write each language's lint/format config from its standards file's "Enforced
    by tooling" section, verifying rule names against the installed tool.
-7. Scaffold the repo on disk. The tree must match architecture.md exactly.
+7. Scaffold the repo on disk. The tree must match architecture.md exactly. With
+   or without a scaffold skill, it follows the standards Project layout —
+   `features/`, `lib/`, `types/`, `constants/`, `tests/` mirroring `src/` with
+   `flows/` and `tools/`, `.mcp.json` at the root — and ships the structure
+   READMEs (root `## Project structure` + one per folder). A reference repo that
+   differs is not followed on these points.
 8. Commit it on main as `chore: scaffold <stack>` (standards, Git) and push — the
    one direct commit to main; cicd protects main next, and every later change
    arrives through a PR.
@@ -86,7 +91,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
   source for every runtime component; `.mcp.json` lists only pinned servers it uses. Scaffold skill present: every deviation from it
   has a recorded reason. Absent: the structure's source references are recorded
   and the library section for the stack exists. The scaffold on disk matches the
-  Structure section exactly, committed and pushed. References consulted ≤3.
+  Structure section exactly, follows the standards Project layout with its READMEs,
+  and is committed and pushed. References consulted ≤3.
 
 ## Output format
 Research mode — team/tech-options.md:

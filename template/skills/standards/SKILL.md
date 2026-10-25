@@ -155,6 +155,77 @@ No exports list, no dependency list — the code already says both.
 ✓ // caution: runs inside the sync worker; no DOM access.
 ```
 
+## Project layout
+
+Binding on every project, any language, scaffolded or not. Scaffold skills only
+add the stack's specifics (route folders, a backend folder) on top:
+
+```
+README.md                 ← what it is, setup, run — and a "Project structure" section
+.mcp.json                 ← project MCP servers (e2e-verification)
+src/
+├── <entry>/              ← the framework's entry points / routes — thin, compose features
+├── features/<domain>/    ← code per glossary domain; one-way imports: entry → features → shared
+├── lib/                  ← shared code used by 3+ features
+├── types/<domain>        ← every type (Types and constants)
+└── constants/<domain>    ← every constant
+tests/                    ← mirrors src/ (Tests), plus flows/ and tools/
+```
+
+Folder names follow the language's casing (`Types/`, `Constants/` in C#).
+
+### Structure READMEs
+
+A new dev or a fresh Claude session reads these first — team/ is local, so the
+repo itself must explain its shape.
+
+- Root `README.md` has a `## Project structure` section: the tree two levels
+  deep, one line per folder, and the rules (import direction, where types,
+  constants, and tests go).
+- Every top-level folder in `src/` and `tests/`, and every `features/<domain>/`,
+  has a `README.md` of 3–8 lines: what belongs here, what doesn't, how files are
+  named. No file lists — they go stale.
+- Whoever adds or reshapes a folder updates its README in the same PR. The
+  architect writes the first set at scaffold; scribe checks them against the real
+  tree at every Feature acceptance.
+
+```markdown
+# features/workouts
+
+Everything about planning and logging a Workout (glossary: Workout, WorkoutSet, Volume).
+
+- components/ — UI for this domain only; hooks/ — its data hooks; lib/ — its business rules.
+- Not here: Workout types (src/types/workout.ts) and limits (src/constants/workout.ts).
+- Other domains never import from this folder's internals — only shared code moves to lib/.
+```
+
+## Types and constants
+
+One home each, split by glossary domain — never declared inline in feature code,
+never defined twice:
+
+```
+src/types/workout.ts        ← Workout, WorkoutSet, VolumeSummary
+src/constants/workout.ts    ← MAX_SETS_PER_WORKOUT
+src/types/user.ts
+src/constants/user.ts
+```
+
+- File name = the glossary domain. A type or constant used across domains goes in
+  the domain that owns the concept, never copied into the other.
+- The one exception: a component's own props type stays at the top of its
+  component file — it changes with the component and nothing else uses it.
+- A generic utility type that ships with its functions (e.g. `Result` with
+  `ok`/`err`) lives with them in `lib/`.
+- No magic numbers or strings in code — a constant with a why-comment at its
+  definition. Design tokens (colors, spacing, radii) are not constants; they
+  live in the theme config.
+- Before adding one, search `types/` and `constants/` — the concept may exist.
+- Languages adapt the folder names and casing (language file); the rule holds.
+- New types and constants for a feature land first, in its contract PR
+  (branch `contract-f<n>`, the Overseer's Feature start), so parallel stories
+  never edit the same file.
+
 ## Design principles
 
 - **KISS**: Simplest solution that works. Exception: measurable perf/UX improvement earns complexity — but only when you can point to the specific problem it solves right now.
@@ -166,18 +237,38 @@ No exports list, no dependency list — the code already says both.
 
 ## Tests
 
-Separate test tree on **every** stack — this rule survives repo precedent. A
-separate file/dir, never inline with source: no Rust `#[cfg(test)] mod tests` in
-the source file, no `Component.test.tsx` beside the component. The language file
-names the stack's tree; if the ecosystem's idiom is genuinely inline, that is a
-deviation with a recorded reason, not a default.
+Separate test tree on **every** stack — this rule survives repo precedent. Never
+inline with source: no Rust `#[cfg(test)] mod tests` in the source file, no
+`Component.test.tsx` beside the component.
+
+Layout — binding on every project, scaffolded or not, greenfield or brownfield.
+`tests/` at the repo root mirrors `src/` path for path; the file name follows the
+language's test convention (language file):
+
+```
+src/app/components/workout-tab/workout-tab.tsx
+tests/app/components/workout-tab/workout-tab.test.tsx
+```
+
+- `tests/flows/<glossary domain>/` — flow tests (e2e-verification layer 1); a flow
+  spans many files, so it has no single mirror.
+- `tests/tools/` — test tooling only: MCP servers (`tests/tools/mcp/<name>/`),
+  the game test bridge, fakes. Never imported by app code.
+- `flows` and `tools` are reserved: `src/` never has top-level folders by
+  those names.
+- A code root outside `src/` (e.g. `convex/`) mirrors under `tests/<root>/`.
+  Where the toolchain fixes the location (a Rust crate's `tests/`, a C# test
+  project, Unity's `Assets/`), the language file says where — the closest mirror
+  the toolchain allows, never inline by choice.
+- No log files in the repo: runtime output is read from the running process
+  (e2e-verification); a test that must dump output writes to the OS temp dir.
 
 Ownership: the tester agent authors all tests (unit + criteria + flow). Dev never
 writes tests — dev's obligation is to keep the existing suite green.
 
 ## Git
 
-Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `docs-f<n>` (feature docs); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
+Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `contract-f<n>` (a feature's types and constants), `docs-f<n>` (feature docs); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
 
 Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch carries it. Squash merge to `main` via auto-merge; PRs require green CI.
 
@@ -210,6 +301,8 @@ leave for the user.
 Names: glossary terms only, no banned synonyms; verb+noun functions; boolean prefixes
 Comments: why-not-what; inline = one line; longer → doc comment (3 inline max without one); none where the code says it; no changelog, ticket/plan refs, reviewer notes, commented-out code
 Header: one purpose line present
+Layout: new or reshaped folder has its README, updated in this PR
+Types/constants: only in types/ and constants/ domain files (props excepted); none duplicated; no magic numbers
 Design: one job per file/function; no speculative abstraction; boundary input validated
 Errors: the language file's error model; nothing swallowed silently
 Tests: existing suite passes; no tests deleted or weakened (authoring: tester)

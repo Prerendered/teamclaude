@@ -16,6 +16,10 @@ bunx convex dev --once   # generates convex/ and env
 
 ## Folder tree (feature-first, big-project layout)
 
+This stack's form of the standards Project layout (generic rules, READMEs,
+types/constants, tests) — the tree adds only what the stack needs. Every
+folder below with a role gets its README.md per that section.
+
 ```
 .
 ├── src/
@@ -27,17 +31,20 @@ bunx convex dev --once   # generates convex/ and env
 │   │   └── <feature>/
 │   │       ├── components/ # UI owned by this feature
 │   │       ├── hooks/      # hooks owned by this feature
-│   │       ├── lib/        # business logic owned by this feature
-│   │       └── <feature>-types.ts
+│   │       └── lib/        # business logic owned by this feature
 │   ├── components/
 │   │   └── ui/             # shadcn/ui + shared primitives only — generated, do not hand-edit
+│   ├── types/              # one file per glossary domain — every type except props
+│   ├── constants/          # one file per glossary domain — CONSTANT_CASE
 │   ├── hooks/              # cross-cutting hooks only (use-*.ts)
-│   ├── lib/                # cross-cutting only: result.ts, utils shared by 3+ features
-│   └── constants.ts        # SCREAMING_SNAKE_CASE, grouped by domain
+│   └── lib/                # cross-cutting only: result.ts, utils shared by 3+ features
 ├── convex/
 │   ├── schema.ts           # single source of truth for the data model
 │   └── <domain>.ts         # queries/mutations grouped by domain
-├── tests/                  # mirrors src/ exactly
+├── tests/                  # mirrors src/; tests/convex/ mirrors convex/
+│   ├── flows/              # flow tests, one folder per glossary domain
+│   └── tools/              # test tooling: tools/mcp/<server>/ — never imported by app code
+├── .mcp.json               # project MCP servers, pinned (e2e-verification)
 ├── tsconfig.json           # strict config from skills/standards
 ├── biome.json
 ├── tailwind.config.ts

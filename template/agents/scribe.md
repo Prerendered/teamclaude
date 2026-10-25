@@ -23,6 +23,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    signatures — verify each against the source, never memory.
 4. Keep a short human-readable architecture summary in docs/ — summarize
    team/architecture.md, never link it.
+   Check the structure READMEs (standards Project layout) against the real tree:
+   the root `## Project structure`, and a README for every top-level folder and
+   `features/<domain>/`. Fix drift; add any missing.
 5. Note the version and setup requirements the cicd and architect artifacts
    establish.
 6. Commit per standards (Git) and push the branch.
@@ -32,6 +35,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
   works.
 - Every documented API item exists in the code with a matching signature.
 - No feature is documented that is not Done on the board.
+- Every structure README matches the tree; none missing.
 - The branch is pushed.
 
 ## Output format

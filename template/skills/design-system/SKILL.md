@@ -5,7 +5,7 @@ description: Token structure, the component-state matrix, and the accessibility 
 
 # Design system
 
-## Tokens — live in the theme config, never constants.ts
+## Tokens — live in the theme config, never in constants/
 | Group | Defines |
 |---|---|
 | Color roles | background, surface, foreground, muted, primary, destructive, border — each with a light and a dark value |

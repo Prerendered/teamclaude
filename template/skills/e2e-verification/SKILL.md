@@ -31,15 +31,18 @@ catches what the one below can't.
 
 architecture.md `## Verification` records, for every runtime component:
 `component — how to run it — how Claude drives it — where its logs come from`.
+Logs are ephemeral and never written into the repo: run each component as a
+background command and read its captured output, or read the platform's log
+stream.
 
 | Stack piece | Drive | Logs / evidence |
 |---|---|---|
 | Web frontend | Chrome DevTools MCP (`chrome-devtools-mcp`): navigate, click, fill, screenshot | console with source-mapped stacks, network requests, performance trace |
-| Local server / API | its dev command, run in the background; HTTP calls | its stdout/stderr redirected to `logs/<component>.log` (gitignored) |
+| Local server / API | its dev command, run in the background; HTTP calls | the background command's captured stdout/stderr |
 | Hosted backend (Convex, Supabase, …) | its CLI or official MCP | the platform's log command or MCP |
-| Desktop webview (Tauri) | Chrome DevTools MCP attached to the webview's remote-debugging port (WebView2) — verify per project | console + network as web; Rust side via the app's log file |
-| Mobile (Expo) | device/simulator; Metro | Metro output to a log file |
-| Game / mod | the project's game test bridge (layer 3) | bridge `read_logs` + the loader's log file |
+| Desktop webview (Tauri) | Chrome DevTools MCP attached to the webview's remote-debugging port (WebView2) — verify per project | console + network as web; Rust side via the background command's captured output |
+| Mobile (Expo) | device/simulator; Metro | Metro's captured output |
+| Game / mod | the project's game test bridge (layer 3) | bridge `read_logs` (in-memory buffer) + the loader's own log in the game folder |
 
 Rules:
 - Every component needs a log source Claude can read without the User. "Look at
@@ -65,7 +68,7 @@ Example:
 {
   "mcpServers": {
     "chrome-devtools": { "command": "npx", "args": ["-y", "chrome-devtools-mcp@<verified-version>"] },
-    "game-bridge": { "command": "node", "args": ["tools/game-bridge-mcp/server.mjs"] }
+    "game-bridge": { "command": "node", "args": ["tests/tools/mcp/game-bridge/server.mjs"] }
   }
 }
 ```
@@ -82,8 +85,7 @@ engine → port `GameBridge.cs`, keep the protocol); existing projects (MelonMCP
 UnityInfoMCP, bepinex-mcp) are references, not dependencies. Every bridge
 provides:
 
-**Inside the game** (a dev-only part of the mod, compiled out of release builds
-or disabled by default config):
+**Inside the game** (`tests/tools/bridge/`, linked into the mod's Debug build only):
 - `health` — ready + mod version, so a restart can wait for it.
 - `read_logs(since)` — the mod's and loader's log lines since a cursor.
 - `query(probe)` — named state probes returning structured data (player
@@ -94,7 +96,7 @@ or disabled by default config):
 - Transport: `127.0.0.1` only, fixed port, JSON lines. Never bound to a public
   interface.
 
-**Outside the game** (the MCP wrapper, in the repo, registered in `.mcp.json`):
+**Outside the game** (the MCP wrapper in `tests/tools/mcp/game-bridge/`, registered in `.mcp.json`):
 - `deploy_build` — copy the fresh build into the loader's mods folder.
 - `restart_game` — kill the process, launch it, wait for `health`.
 - `load_test_save(name)` — start from a known save instead of the menus.

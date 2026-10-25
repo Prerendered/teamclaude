@@ -43,6 +43,10 @@ installed SDK's docs.
 
 - **Files**: one top-level type per file; file name = type name (`WorkoutLog.cs`);
   folders by feature, not by kind.
+- **Types and constants** (core standards): domain data types (records, DTOs,
+  enums) in `Types/<Domain>/`, one per file; constants in
+  `Constants/<Domain>Constants.cs` as a `static class` of `const` /
+  `static readonly`. Services and behavior stay in their feature folders.
 - **Booleans**: `Is`/`Has`/`Can`/`Should`/`Did` prefix (`IsComplete`).
 - **Errors**: exceptions are idiomatic in .NET — throw for programmer errors and
   broken invariants; return `bool TryX(out T)` or a result type for expected
@@ -59,10 +63,13 @@ installed SDK's docs.
     on init.
   - Harmony patches: one class per patched target, named `<Target>Patch`, with a
     why-comment on what the original does wrong for the mod.
-  - Dev-only code (the game test bridge) behind `#if TEAMCLAUDE_BRIDGE`, never in
-    release builds.
+  - Dev-only code (the game test bridge) lives in `tests/tools/bridge/`, linked
+    into Debug builds only (a Debug-conditioned `<Compile Include>`) and guarded by
+    `#if TEAMCLAUDE_BRIDGE` — a Release build cannot contain it.
 - **Tests**: a separate test project, `tests/<Project>.Tests/`, mirroring the
-  source folders; game logic tested through fakes of the engine hooks
+  project's source folders, files `<Type>Tests.cs`. Unity Editor projects: the
+  Unity Test Framework only runs tests inside `Assets/`, so tests go in
+  `Assets/Tests/` (own `.asmdef`) mirroring `Assets/Scripts/`; game logic tested through fakes of the engine hooks
   (e2e-verification layer 1).
 
 ## Examples
@@ -126,16 +133,37 @@ internal static class PlayerStatsResetOnLoadPatch
 The shape every C# file aims for. Glossary: Workout, WorkoutSet, Volume.
 
 ```csharp
+// Constants/WorkoutConstants.cs
+// Limits and defaults for workouts — every workout number lives here.
+
+namespace Gym.Constants;
+
+public static class WorkoutConstants
+{
+    // Sync payloads over 1 MB are rejected; 40 sets keeps a workout well under it.
+    public const int MaxSetsPerWorkout = 40;
+}
+```
+
+```csharp
+// Types/Workout/VolumeSummary.cs
+// Training volume for one workout, as every progress chart consumes it.
+
+namespace Gym.Types.Workout;
+
+public sealed record VolumeSummary(double Volume, int WorkingSetCount);
+```
+
+```csharp
 // Workouts/VolumeCalculator.cs
 // Derives training volume from logged sets — the number every progress chart reads.
+
+using Gym.Types.Workout;
 
 namespace Gym.Workouts;
 
 public sealed class VolumeCalculator
 {
-    // Sync payloads over 1 MB are rejected; 40 sets keeps a workout well under it.
-    public const int MaxSetsPerWorkout = 40;
-
     private readonly IWorkoutStore _workoutStore;
 
     public VolumeCalculator(IWorkoutStore workoutStore) => _workoutStore = workoutStore;

@@ -18,7 +18,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 1. Work only in `Workdir` (a worktree at origin/main). Build from scratch per
    ## Verification — never reuse a stale artifact.
 2. Start every runtime component the feature touches as ## Verification says,
-   with its logs going where it says.
+   each as a background command so its output is captured — never redirect logs
+   into the repo.
 3. For each story, drive each acceptance criterion as the User would, through the
    recorded driver (Chrome DevTools MCP, the CLI, the game bridge). Capture the
    evidence: the observed result plus the logs, console, network, or state

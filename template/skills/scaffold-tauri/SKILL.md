@@ -13,6 +13,10 @@ bun create tauri-app@latest . --template react-ts --manager bun
 
 ## Folder tree (feature-first, big-project layout)
 
+This stack's form of the standards Project layout (generic rules, READMEs,
+types/constants, tests) — the tree adds only what the stack needs. Every
+folder below with a role gets its README.md per that section.
+
 ```
 .
 ├── src/                    # React frontend
@@ -22,20 +26,26 @@ bun create tauri-app@latest . --template react-ts --manager bun
 │   │   └── <feature>/
 │   │       ├── components/
 │   │       ├── hooks/
-│   │       ├── lib/
-│   │       └── <feature>-types.ts
+│   │       └── lib/
 │   ├── components/
 │   │   └── ui/             # shared primitives only
-│   ├── hooks/              # cross-cutting hooks only
-│   ├── lib/                # cross-cutting: result.ts + ipc.ts (the only file calling invoke())
-│   └── constants.ts
+│   ├── types/              # one file per glossary domain — every type except props
+│   ├── constants/          # one file per glossary domain — CONSTANT_CASE
+│   ├── hooks/              # cross-cutting hooks only (use-*.ts)
+│   └── lib/                # cross-cutting: result.ts + ipc.ts (the only file calling invoke())
 ├── src-tauri/
 │   ├── src/
 │   │   ├── main.rs
-│   │   └── commands/       # one module per domain — mirrors src/features/ domains
+│   │   ├── commands/       # one module per domain — mirrors src/features/ domains
+│   │   ├── types/          # one module per glossary domain
+│   │   └── constants/      # one module per glossary domain
+│   ├── tests/              # Rust integration tests, mirroring src-tauri/src/ (Cargo's location)
 │   ├── capabilities/       # permission scopes — narrowest possible
 │   └── tauri.conf.json
-├── tests/                  # mirrors src/ exactly
+├── tests/                  # mirrors src/ (the React side)
+│   ├── flows/              # flow tests, one folder per glossary domain
+│   └── tools/              # test tooling: tools/mcp/<server>/ — never imported by app code
+├── .mcp.json               # project MCP servers, pinned (e2e-verification)
 ├── tsconfig.json           # strict config from skills/standards
 └── package.json
 ```
