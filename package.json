@@ -1,6 +1,6 @@
 {
   "name": "teamclaude",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Installs a senior software team of Claude Code agents, skills, and artifact templates into any project.",
   "type": "module",
   "bin": {

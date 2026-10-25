@@ -12,14 +12,20 @@ SCAFFOLDED_STACKS="next-convex tauri expo extension"
 STACK=""
 VERSION=""
 FORCE=0
+UPDATE=0
 REPERTOIRE=""
 LOCAL=0
 
 usage() {
   cat <<EOF
 Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--local] [--force]
+       install.sh --update [--stack <name>] [--version <tag>] [--local]
 
 Flags:
+  --update            Refresh an existing install. Replaces the template's agents,
+                      skills, and CLAUDE.md; leaves .claude/settings.json,
+                      project-local agents/skills, and team/ artifacts untouched.
+                      Defaults --stack to the value in team/state.md.
   --stack <name>      Optional. The stack is normally chosen at intake; pass it only
                       to decide up front. Stacks with a scaffold skill:
                       ${SCAFFOLDED_STACKS// /, }.
@@ -33,7 +39,7 @@ Flags:
   --local             Install from the template/ next to this script instead of
                       cloning. Use when running from a checkout — required for
                       private repos, where raw/anonymous fetch does not work.
-  --force             Overwrite an existing .claude/ directory.
+  --force             Reinstall over an existing .claude/ directory.
 
 Env:
   TEAMCLAUDE_REPO   Override the source repo URL (ignored with --local).
@@ -49,20 +55,35 @@ while [ $# -gt 0 ]; do
     --repertoire) REPERTOIRE="${2:-}"; shift 2 ;;
     --local)      LOCAL=1; shift ;;
     --force)      FORCE=1; shift ;;
+    --update)     UPDATE=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "unknown flag: $1" ;;
   esac
 done
 
+if [ "$UPDATE" -eq 1 ] && [ "$FORCE" -eq 1 ]; then
+  fail "--force is not valid with --update — update never removes files it did not install"
+fi
+
+if [ "$UPDATE" -eq 1 ]; then
+  [ -d .claude/agents ] && [ -f team/state.md ] \
+    || fail "no teamclaude install found here (need .claude/agents and team/state.md) — run without --update first"
+  # An update inherits the stack the project was installed with.
+  if [ -z "$STACK" ]; then
+    STACK="$(sed -n 's/^stack:[[:space:]]*//p' team/state.md | head -n 1)"
+  fi
+  FROM="$(sed -n 's/^team-version:[[:space:]]*//p' team/state.md | head -n 1)"
+  FROM="${FROM:-unknown}"
+elif [ -d .claude ] && [ "$FORCE" -eq 0 ]; then
+  fail ".claude/ already exists — re-run with --update to refresh it, or --force to reinstall"
+fi
+
+# Recompute now that --update may have supplied the stack from team/state.md.
 HAS_SCAFFOLD=0
 if [ -n "$STACK" ]; then
   case " $SCAFFOLDED_STACKS " in
     *" $STACK "*) HAS_SCAFFOLD=1 ;;
   esac
-fi
-
-if [ -d .claude ] && [ "$FORCE" -eq 0 ]; then
-  fail ".claude/ already exists — re-run with --force to overwrite"
 fi
 
 command -v git >/dev/null 2>&1 || fail "git is required"
