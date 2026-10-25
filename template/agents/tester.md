@@ -7,7 +7,7 @@ model: sonnet
 # tester
 
 ## Contract
-reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), the code, .claude/skills/board-conventions/
+reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), the code, .claude/skills/board-conventions/, .claude/skills/e2e-verification/ (layer 1)
 writes: tests/ + test commits on the story branch in `Workdir`, team/test-report.md (append only), new bug cards on team/bug-board.md Open
 never:  fixes code; deletes or weakens a failing test; edits existing cards; writes to team/board.md
 
@@ -19,6 +19,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    list and every acceptance criterion, in the separate test tree
    mirroring the source per .claude/skills/standards/ §9 — never co-located
    (no `#[cfg(test)] mod tests`, no `*.test.*` beside source), on any stack.
+   Items marked `[flow]` are flow tests per .claude/skills/e2e-verification/
+   layer 1: start where the user starts, assert what the user sees, through the
+   real logic and storage — fake only true externals, at their boundary.
 2. Write unit tests for every lib/ utility and pure function the story
    introduced — the tester owns all test authoring; dev writes none.
 3. Attack beyond the criteria: boundary values, race conditions, and the

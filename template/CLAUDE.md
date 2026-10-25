@@ -133,11 +133,13 @@ tiers); more than 2 returns from the same step → escalate to User.
      User. The answer becomes an Amendment, plus a card edit if criteria change.
    Then resume the same dev with the answer via SendMessage (its context intact),
    not a fresh dispatch. tester raises QUESTIONs the same way.
-4. **Test** — dispatch tester: the plan's test list plus one test per criterion,
-   committed on the story branch. A failing test on the story's own criteria or
+4. **Test** — dispatch tester: the plan's test list plus one test per criterion —
+   `[flow]` items as flow tests (e2e-verification layer 1) — committed on the
+   story branch. A failing test on the story's own criteria or
    test list → back to dev. Findings beyond the story → bug-board.
 5. **Check** — dispatch reviewer (check mode): lint, typecheck, full suite unpiped,
-   standards checklist, every criterion backed by a passing test, and the diff
+   standards checklist, every criterion backed by a passing test (flow test for
+   each `[flow]` item), and the diff
    conforms to the plan + Amendments (no plan → the card's Files; trivial card →
    no criterion-coverage item). FAIL (including `unapproved deviation`) →
    dev → 5.
@@ -165,16 +167,17 @@ its own worktree, up to the WIP limit.
 1. Dispatch reviewer and security (feature mode, `model: opus`) on
    `<feature start>..origin/main` — the seams the per-story passes structurally
    can't see. Findings → bug-board; a critical/high is fixed before step 3.
-2. End-to-end gate (provisional placement): drive what is automatable on main (the
-   verify/run skill). Rebuild the binaries/tools the flow depends on first (never a
-   stale artifact), then smoke the commands and the browser/CLI paths against real
-   state. Some legs can't be fully driven from here — a desktop app needing a live
-   GUI, an MCP server, a device. Verify every automatable leg, then list the legs
-   you could not as `manual test — confirm` items. Never report "end-to-end
-   verified" for a path nothing exercised (senior-protocol rule 5). A defect found
-   here is a bug-board card (Found by: e2e gate).
+2. End-to-end gate — dispatch verifier in a fresh worktree at origin/main
+   (`.worktrees/verify-f<n>`, removed after). It runs the real app per
+   architecture.md ## Verification, drives every criterion through the MCP/CLI
+   drivers in `.mcp.json`, and reads logs, console, network, and state for
+   errors (.claude/skills/e2e-verification/ layers 2–3). Findings → bug-board
+   (Found by: e2e gate); a critical/high is fixed before step 3. Never report
+   "end-to-end verified" for a path nothing exercised (senior-protocol rule 5) —
+   an undriveable leg comes back as a `manual test — confirm` item. Layer 1 (flow
+   tests) already ran per story in CI.
 3. User test — feature → Testing. Present a checklist: each story's criteria
-   phrased as things to try, plus the manual-test items from step 2. User findings
+   phrased as things to try, plus the verifier's manual-test items. User findings
    → bug-board (Found by: User); a critical/high is fixed before the next feature.
    User signs off → Accepted.
 4. Dispatch scribe → docs for the feature on branch `docs-f<n>`; Overseer opens the
@@ -201,7 +204,8 @@ fix the contract, do not widen the payload ad hoc.
 
 **One worktree per ticket (mandatory).** At pick, the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards §10).
+(ticket `us-<n>` / `b<n>` / `docs-f<n>`, branch per standards §10). The verifier
+gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
 Every agent on that story gets it as `Workdir` and works only there. Dispatch them
 *without* `isolation: "worktree"`: a per-agent worktree cannot check out a branch
 another worktree holds, which breaks the dev → tester → dev handoff on one branch.
@@ -226,7 +230,7 @@ premium tier, used sparingly.
   (SHA-pinning, the dist/-before-cargo-test ordering, a Linux build needing a real
   PNG) is subtle, one-shot, and the highest-blast-radius work in the run.
 - **sonnet**: dev, reviewer, tester, security, scout, seer, designer, refactor,
-  archivist. dev executes a verified plan, so sonnet is enough. Archivist runs
+  verifier, archivist. dev executes a verified plan, so sonnet is enough. Archivist runs
   once, but its entry seeds every future project — a wrong pitfall compounds, so it
   is not worth haiku's saving.
 - **haiku**: scribe — bounded, template-driven. Docs that miss the point → re-run

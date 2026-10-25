@@ -1,0 +1,11 @@
+{
+  "port": 27420,
+  "processName": "SonsOfTheForest.exe",
+  "launch": "start \"\" steam://rungameid/1326470",
+  "modsDir": "C:/Program Files (x86)/Steam/steamapps/common/Sons Of The Forest/Mods",
+  "buildFiles": ["../../../src/MyMod/bin/Debug/MyMod.dll"],
+  "loadSaveCommand": "load_save",
+  "readyTimeoutSec": 180,
+  "killGraceMs": 3000,
+  "requestTimeoutMs": 5000
+}

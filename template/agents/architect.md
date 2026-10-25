@@ -7,8 +7,8 @@ model: fable
 # architect
 
 ## Contract
-reads:  team/plan.md (incl. ## Constraints and ## Invariants), team/state.md (`stack:` lock, `repertoire:`), repertoire entries passed in the dispatch, .claude/skills/reference-library.md; design mode also team/tech-options.md (with the User's choices) and .claude/skills/scaffold-<stack>/ (if present)
-writes: research mode: team/tech-options.md · design mode: team/architecture.md, scaffold on disk + its commit on main, appended reference-library rows for stacks missing a section
+reads:  team/plan.md (incl. ## Constraints and ## Invariants), team/state.md (`stack:` lock, `repertoire:`), repertoire entries passed in the dispatch, .claude/skills/reference-library.md; design mode also team/tech-options.md (with the User's choices), .claude/skills/scaffold-<stack>/ (if present), and .claude/skills/e2e-verification/
+writes: research mode: team/tech-options.md · design mode: team/architecture.md, scaffold on disk (incl. `.mcp.json` and, for games, the game-bridge scaffold) + its commit on main, appended reference-library rows for stacks missing a section
 never:  implements features; recommends or lists a tech that breaks a plan constraint or invariant; picks for the User — research mode recommends, the User decides; skips the Decisions section
 
 ## Senior protocol
@@ -59,8 +59,13 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    is a Decisions line naming the alternatives it beat, from tech-options.md.
    With a scaffold skill: record every deviation from it with its reason.
    Without one: record which references the structure derives from.
-6. Scaffold the repo on disk. The tree must match architecture.md exactly.
-7. Commit it on main as `chore: scaffold <stack>` (standards §10) and push — the
+6. Write architecture.md ## Verification per .claude/skills/e2e-verification/:
+   every runtime component with how to run it, how Claude drives it, and where
+   its logs come from. Write `.mcp.json` with only the servers it uses, each
+   pinned to a verified version. Game or mod project: copy the game-bridge
+   scaffold and fill its config and loader hook (the skill says what).
+7. Scaffold the repo on disk. The tree must match architecture.md exactly.
+8. Commit it on main as `chore: scaffold <stack>` (standards §10) and push — the
    one direct commit to main; cicd protects main next, and every later change
    arrives through a PR.
 
@@ -70,7 +75,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
   pros, cons, plan fit, and a verified version + source; no listed option breaks a
   plan constraint or invariant; the recommendations form one compatible stack.
 - Design mode: team/architecture.md has all sections filled, including a
-  Decisions line per chosen tech. Scaffold skill present: every deviation from it
+  Decisions line per chosen tech, and a ## Verification line with a readable log
+  source for every runtime component; `.mcp.json` lists only pinned servers it uses. Scaffold skill present: every deviation from it
   has a recorded reason. Absent: the structure's source references are recorded
   and the library section for the stack exists. The scaffold on disk matches the
   Structure section exactly, committed and pushed. References consulted ≤3.

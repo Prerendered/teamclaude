@@ -72,7 +72,7 @@ DELIVERY LOOP — one feature at a time (open critical/high bug first)
    ├► planner ── verified build plan: files, signatures, APIs, test list (opus/fable)
    ├► dev ────── builds the plan, asks on anything outside it (sonnet)
    │              └ QUESTION: technical → planner on fable · feature → User
-   ├► tester ─── tests from the plan + criteria, committed on the branch
+   ├► tester ─── tests from the plan + criteria (flow tests per criterion), on the branch
    ├► reviewer ─ check: lint, typecheck, suite, standards, plan conformance
    ├► Overseer ─ opens the PR
    ├► reviewer ─ PR review posted on GitHub (+ security if sensitive)
@@ -82,7 +82,7 @@ DELIVERY LOOP — one feature at a time (open critical/high bug first)
    ▼  every story of the feature merged
 FEATURE ACCEPTANCE
    ├► reviewer + security ─ feature mode (opus) on the cumulative diff
-   ├► end-to-end gate ───── automatable paths + manual-test list
+   ├► verifier ──────────── runs the real app, drives it via MCP, reads logs/console/network
    ├► User tests the feature ─► findings → bug-board ─► Accepted
    └► scribe ─ docs PR
    │
@@ -99,6 +99,21 @@ sinks to the bottom. Bugs go on a separate `team/bug-board.md` (In Progress, Ope
 with a severity and a one-line repro. An Open critical/high bug is fixed before the next
 story; medium/low are worked before the feature's acceptance. Each bug is fixed test-first:
 tester writes a failing regression test, dev makes it pass.
+
+**End-to-end verification** (`e2e-verification` skill) runs in three layers:
+1. **Flow tests in code**, every story, in CI: tests that replay a whole user flow through
+   the real logic and storage (Playwright for web UI).
+2. **Runtime observation**, at feature acceptance: the `verifier` agent runs the real app
+   and drives it, reading logs, console, network, and state. Web uses the Chrome DevTools
+   MCP; every runtime component has a log source recorded in `architecture.md`
+   `## Verification`.
+3. **Game test bridge**, for game/mod projects: a dev-only bridge inside the game plus an
+   MCP wrapper (`restart_game`, `deploy_build`, `load_test_save`, state probes, setup
+   commands, logs), so a relaunch-and-set-up loop is one call. The scaffold ships in the
+   skill; each project fills in its loader hooks, probes, and commands.
+
+Project MCP servers live in a committed `.mcp.json`, pinned to exact versions — they ship
+with the tests.
 
 **GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). Commits and
 PR titles are `<type>: <description>` — the PR title becomes the single squash commit on
@@ -125,6 +140,7 @@ for destructive actions.
 | `security` | PR diff / feature diff, security-standards, architecture.md | security-report.md, PR review comment | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
 | `tester` | story criteria or bug card, plan test list, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
+| `verifier` | feature criteria, architecture.md ## Verification, e2e-verification, `.mcp.json` servers | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
 | `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
 | `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |
 | `archivist` | team/ artifacts, state.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |

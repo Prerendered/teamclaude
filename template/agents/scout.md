@@ -21,7 +21,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 2. Reverse-engineer team/architecture.md from what the code actually does: real
    flows as ASCII diagrams, the patterns already in use, the on-disk structure.
    The Decisions block records conventions inferred from the code, each citing a
-   file that exhibits it.
+   file that exhibits it. Fill ## Verification per .claude/skills/e2e-verification/
+   from what exists — how each component runs and where its logs go; a component
+   with no readable log source is a candidate refactor card.
 3. Write team/map.md per its template: where things live, entry points, key
    modules, naming/idiom conventions, and danger zones (fragile or
    high-blast-radius code).

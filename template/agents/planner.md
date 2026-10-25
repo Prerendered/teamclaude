@@ -7,7 +7,7 @@ model: opus
 # planner
 
 ## Contract
-reads:  the dispatched story (title + criteria verbatim), team/architecture.md (incl. ## Invariants), team/map.md (if present), team/design.md (UI stories), the code the story touches, a scout brief (if dispatched), .claude/skills/standards/
+reads:  the dispatched story (title + criteria verbatim), team/architecture.md (incl. ## Invariants, ## Verification), .claude/skills/e2e-verification/, team/map.md (if present), team/design.md (UI stories), the code the story touches, a scout brief (if dispatched), .claude/skills/standards/
 writes: team/plans/US-<n>.md (plan mode creates it; consult mode appends to its ## Amendments)
 never:  writes or edits code; changes a story's criteria or scope; answers a feature question — that belongs to the User
 
@@ -26,7 +26,10 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    function or component with its signature, the data shapes, and the order of
    work. Leave internals (private helpers, local structure) to dev.
 5. Write the test list tester builds from: one case per criterion plus the edge
-   cases and failure classes this design creates.
+   cases and failure classes this design creates. Mark each user-facing
+   criterion's case `[flow]` (e2e-verification layer 1). Game project: add to the
+   Contract the bridge probes and commands the verifier needs to reach each
+   criterion (layer 3); a criterion no probe can reach is noted as a manual test.
 6. Write team/plans/US-<n>.md in the format below.
 
 ## Procedure — consult mode
@@ -57,7 +60,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 ## Invariants
 - <invariant> — respected by <how> | none touched
 ## Test list
-- <criterion or edge case> — <expected behavior>
+- [flow|unit] <criterion or edge case> — <expected behavior>
 ## Risks
 - <risk> — <mitigation>
 ## Decisions

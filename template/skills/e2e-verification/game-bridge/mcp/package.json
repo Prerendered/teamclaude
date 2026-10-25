@@ -1,0 +1,14 @@
+{
+  "name": "game-bridge-mcp",
+  "private": true,
+  "type": "module",
+  "description": "MCP wrapper for the in-game test bridge (teamclaude e2e-verification layer 3).",
+  "scripts": {
+    "start": "node server.mjs",
+    "fake-game": "node fake-game.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  }
+}

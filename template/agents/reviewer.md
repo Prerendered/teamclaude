@@ -18,7 +18,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 1. Run lint, typecheck, and the full test suite, each unpiped so its real exit
    code reaches you (rule 5). Any non-zero → FAIL.
 2. Every acceptance criterion maps to a passing test in team/test-report.md and
-   on the branch. A criterion with no passing test → FAIL. Bug card: its
+   on the branch, and every `[flow]` item in the plan has a passing flow test.
+   A criterion with no passing test → FAIL. Bug card: its
    regression test passes. Trivial card (no tester): skip this item.
 3. Plan conformance: diff the branch against the plan's Files and Contract plus
    its Amendments. A file outside the list, a changed public signature or data

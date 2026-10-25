@@ -1,4 +1,4 @@
-<!-- owner: architect · readers: dev, reviewer -->
+<!-- owner: architect · readers: planner, dev, reviewer, verifier -->
 
 # Architecture — [Project]
 
@@ -14,6 +14,10 @@
 
 ## Structure
 <!-- folder tree as scaffolded on disk — must match the repo exactly -->
+
+## Verification
+<!-- per runtime component: <component> — run: <command> — drive: <MCP | CLI | bridge>
+     — logs: <file | command | MCP tool>. See .claude/skills/e2e-verification/. -->
 
 ## Decisions
 <!-- one line per decision: chose <X> over <Y, Z> because <reason>  [ref: <link>] -->
