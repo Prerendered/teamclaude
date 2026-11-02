@@ -1,7 +1,7 @@
 ---
 name: refactor
 description: Dispatch per refactor card in the Story loop — improves existing code to standard without changing behavior, proven by tests green before and after.
-model: sonnet
+model: opus
 ---
 
 # refactor
