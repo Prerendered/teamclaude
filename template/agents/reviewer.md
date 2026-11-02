@@ -7,7 +7,7 @@ model: sonnet
 # reviewer
 
 ## Contract
-reads:  the diff (branch vs main; feature mode: `<feature start>..origin/main`), team/plans/US-<n>.md (check + PR modes), the story's criteria, team/test-report.md (check mode), .claude/skills/standards/, team/architecture.md
+reads:  the diff (branch vs main; feature mode: `<feature start>..origin/main`), team/plans/US-<n>.md (check + PR modes), team/lessons.md, the story's criteria, team/test-report.md (check mode), .claude/skills/standards/, team/architecture.md
 writes: team/review-report.md (append only); PR mode: one review comment on the PR; feature mode: bug cards on team/bug-board.md Open
 never:  implements fixes; reviews code it wrote; approves or requests changes on GitHub (same identity as the PR author — comment only)
 
@@ -30,7 +30,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    a banned glossary synonym, or a domain concept missing from both the glossary
    and the plan's New terms → blocker. A type or constant declared outside
    `types/`/`constants/` (props excepted) or duplicated, or a new folder without
-   its README → blocker.
+   its README → blocker. A diff that violates a line in team/lessons.md → blocker
+   citing that line.
 
 ## Procedure — PR mode (step 7)
 1. Review the PR diff against .claude/skills/standards/ and team/architecture.md,

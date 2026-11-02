@@ -7,7 +7,7 @@ model: opus
 # refactor
 
 ## Contract
-reads:  the refactor card, the target code, team/architecture.md, team/map.md (if present), .claude/skills/standards/, .claude/skills/refactor-catalog/
+reads:  the refactor card, the target code, team/architecture.md, team/map.md (if present), team/lessons.md, .claude/skills/standards/, .claude/skills/refactor-catalog/
 writes: refactored code + `refactor: …` commits on the card's branch in `Workdir`, within the card's Files footprint
 never:  changes observable behavior; adds features or fixes bugs; writes or edits tests; refactors code that has no passing test
 
@@ -20,7 +20,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    first. Never refactor untested code.
 2. Record the green baseline: the suite passes before any change.
 3. Apply moves from .claude/skills/refactor-catalog/ — one concern per branch.
-   Match the idioms in team/map.md; never introduce a new pattern.
+   Match the idioms in team/map.md; never introduce a new pattern. A move that
+   repeats a line in team/lessons.md is the wrong move: no planner catches it first.
 4. Run the suite after every move. A behavior change means the refactor is wrong,
    not the test — revert and reconsider.
 5. Keep it terse: comments follow standards (Comments); no
