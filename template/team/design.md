@@ -13,6 +13,7 @@
 | border | | |
 
 Type scale: <...>  ·  Spacing base: <...>  ·  Radii: <...>
+Breakpoints: <...>
 
 ## Components
 ### <component>

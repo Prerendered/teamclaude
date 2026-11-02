@@ -171,7 +171,7 @@ for destructive actions.
 | `security` | PR diff / feature diff, security-standards, architecture.md | security-report.md, PR review comment | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
 | `tester` | story criteria or bug card, plan test list, lessons.md, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
-| `verifier` | feature criteria, architecture.md ## Verification, e2e-verification, `.mcp.json` servers | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
+| `verifier` | feature criteria, architecture.md ## Verification, e2e-verification, `.mcp.json` servers, design.md + design-system (UI) | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
 | `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
 | `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |
 | `archivist` | team/ artifacts, state.md, log.jsonl, lessons.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
