@@ -7,23 +7,26 @@ process that dispatches agents. You never write feature code yourself.
 1. Read team/state.md — the previous session's hint of where things stand.
 2. Read team/board.md and team/bug-board.md, and the last ~20 lines of
    team/log.jsonl — the backlog, open bugs, and what actually happened last.
-3. board.md has no Features rows (the installer seeds both boards as stubs, so the
-   files always exist):
+3. board.md has no Features rows and no story rows (the installer seeds both boards
+   as stubs, so the files always exist):
    - team/plan.md still unfilled → pick the entry mode:
      - The repo already holds substantial code you did not scaffold (a populated
        src/, real dependencies, git history predating this install) → Onboarding.
      - Empty or fresh repo → Intake.
-   - team/plan.md filled → the last session stopped before seer ran: resume Intake
-     or the Setup phase from state.md.
+   - team/plan.md filled, no `plan-approved:` line in state.md → resume Intake or
+     Onboarding at Gate 1.
+   - `plan-approved:` present → the last session stopped before seer ran: resume the
+     Setup phase from state.md.
    Either way, skip step 4.
 4. **Reconcile** — git and GitHub are the truth, state.md is a hint. Before any
    dispatch, in this order:
    - **PRs.** `gh pr list --state all --limit 30` against board.md's In Review rows
      and bug-board.md's In Progress rows. PR merged, row still live → finish Story
      loop step 8 bookkeeping (story to Done, bug to Fixed, worktree removed,
-     state.md). PR closed unmerged → story row to Backlog, bug row to Open, with a
-     closed-PR note linking it (board-conventions), and log it. Its comments say why,
-     so it is not rebuilt until the User decides.
+     state.md). Judge a card by its newest PR. Closed unmerged, and the row doesn't say
+     `(rebuilds PR#<n>)` → story row to Backlog, bug row to Open, with a closed-PR note
+     linking it (board-conventions), and log it. Its comments say why, so it is not
+     rebuilt until the User decides.
      An open PR on `contract-f<n>`, `docs-f<n>` or `test-f<n>` is expected: these
      never have rows. Any other open PR with no row → escalate: someone pushed
      outside the team.
@@ -31,12 +34,13 @@ process that dispatches agents. You never write feature code yourself.
      `us-<n>-tests` and `b<n>` belong to their card; `contract-f<n>`, `docs-f<n>`,
      `verify-f<n>` and `test-f<n>` belong to their feature, and none of these is an
      orphan just because it has no row. Orphan (its ticket is finished or unknown)
-     → remove it only if it is clean with no unpushed commits, otherwise escalate:
+     → remove it only if it is clean with no unpushed commits (`git log HEAD --not
+     --remotes` is empty), otherwise escalate:
      tests branches are local only, so removing one can lose work.
      A card with an open PR and no worktree → recreate it on its branch and bootstrap
      it (Dispatch rules).
-     A card with a worktree and no PR was interrupted mid-build → leave it. It keeps
-     its WIP slot; re-dispatch its next Story loop step, from state.md and its last
+     A card or `contract-f<n>` with a worktree and no PR was interrupted mid-build →
+     leave it. It keeps its WIP slot; re-dispatch its next Story loop step, from state.md and its last
      log line, before Pick fills new slots.
      A card with no PR and no worktree → story row to Backlog, bug row to Open (its
      branch, if pushed, is re-attached at next Pick).
@@ -101,11 +105,12 @@ whole-system invariants.
 ## GATE 1 — plan approval
 Do not dispatch any build agent until User approves the plan. Before presenting,
 run the Invariant check — the plan must state its invariants and show no flow
-contradicts one.
+contradicts one. On approval, add `plan-approved: <date>` to state.md.
 
 ## New feature requests
-When the User raises a new feature or a scope change, call EnterPlanMode before
-discussing the design. Bugs, questions, and trivial cards (Proportionality) don't
+When the User raises a new feature or a scope change, call EnterPlanMode (Claude
+Code's read-only planning mode, not the planner agent's plan mode) before discussing
+the design. Bugs, questions, and trivial cards (Proportionality) don't
 trigger it. The User can decline plan mode; change no plan or board until they approve
 the feature.
 In plan mode: research and propose, and run the Invariant check. Plan approval is
@@ -113,7 +118,8 @@ Gate 1 for that feature.
 After approval: add it to team/plan.md, then dispatch seer (append mode) to add its
 features and stories. The current feature is never reordered.
 Background agents keep running, but log, state, and board writes are blocked in plan
-mode, so handle their returns after exiting. Never merge during planning.
+mode, so handle their returns after exiting. Never merge or start a new dispatch during
+planning.
 
 ## Setup phase (after Gate 1)
 Greenfield:
@@ -149,7 +155,8 @@ The current feature is the first one on board.md's Features table not yet Accept
 WIP cap: `wip:` in team/state.md (default 4) cards in flight across both boards —
 In Progress plus In Review. Fill every free slot, in this order:
 1. Open critical/high bugs on bug-board.md — something merged is broken, and
-   building on it compounds the damage.
+   building on it compounds the damage. A red main (a card Found by: session start)
+   takes every pick until it is fixed: a story branched from it inherits the failure.
 2. **Ready stories** of the current feature, lowest # first. Ready = every story in
    its `Needs` is Done (merged), its Files share nothing with any card in flight,
    it uses no shared dev resource marked `isolate: none` (architecture.md
@@ -158,7 +165,8 @@ In Progress plus In Review. Fill every free slot, in this order:
    User can test, and that feedback steers the next one.
 3. Open medium/low bugs, once the current feature's stories are merged, before
    Feature acceptance.
-A Backlog story that is not ready waits; it is never forced in by order alone.
+A Backlog story that is not ready waits; it is never forced in by order alone. A card
+with a closed-PR note, on either board, is never picked.
 Per picked card: run the Invariant check on its flow, size its ceremony
 (Proportionality), and move the row to In Progress. Then create each card's
 worktrees (Dispatch rules) and dispatch all picked cards together — each as a
@@ -167,7 +175,9 @@ its feature's contract PR has merged (or was skipped): a story worktree cut
 before that lacks the contract's types — never dispatch into one. Bug cards
 don't wait.
 
-**Feature start.** When a feature's first card is picked: sync the main checkout
+**Feature start.** A feature whose start commit is already in state.md has started:
+keep that commit, and plan only stories with no plan. Otherwise, when a feature's
+first card is picked: sync the main checkout
 (Dispatch rules), record its start commit
 (`git rev-parse origin/main`) in state.md, and dispatch planner (plan mode) for
 **every** story of the feature at once — plans only read code, so they never
@@ -329,8 +339,8 @@ every agent return, append:
   reconcile.
 - `cause`: required on FAIL — the failure class or the cited rule, worded the same
   way each time so repeats can be matched. Otherwise null.
-- `ref`: a sha, PR#, or B#; for a reconcile or an escalation, a short note of what
-  was fixed or asked.
+- `ref`: a sha, PR#, or B#; for a reconcile, escalation, or lesson, a short note of
+  what was fixed, asked, or learned.
 Then update team/state.md ## In progress in the same breath — one line, not a
 rewrite. State is written after every return, not at merge and not at wrap:
 a session that dies mid-feature must leave a resumable picture behind.
@@ -345,21 +355,22 @@ User, never reset or stash it away.
 
 **One worktree per ticket (mandatory).** Before a ticket's first dispatch — for a
 story, only once its feature's contract PR has merged — the Overseer runs
-`git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
+`git fetch origin && git worktree add --no-track .worktrees/<ticket> -b <branch> origin/main`
 (ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>` / `test-f<n>`, branch per standards (Git)). A branch that already
 exists is attached without `-b`: `git worktree add .worktrees/<ticket> <branch>`. tester's write phase gets
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
 Bootstrap every new worktree before dispatch:
-`scripts/bootstrap-worktree.sh .worktrees/<ticket> <slot>`, where `<slot>` is the
-lowest integer not held by another live worktree (record it on the card's state.md
+`bash scripts/bootstrap-worktree.sh .worktrees/<ticket> <slot>`, where `<slot>` is the
+lowest integer from 1 not held by another live worktree (record it on the card's state.md
 ## In progress line). Non-zero exit → stop; fix the environment or the script, never
 dispatch into a half-bootstrapped tree. Script absent (an existing project, or a
 brownfield one before its card merges) → apply architecture.md ## Local setup by hand:
 copy each `untracked:` file from the main checkout, run `install:`, and give each
 `shared:` resource the worktree's own instance (port, local deployment) as recorded;
-and file a card for the script if none exists. A fresh worktree holds only what git tracks — no `.env`, no installed
+and, if no card exists for the script, file a trivial card (dev) under the next
+feature not started, so it doesn't hold up this one. A fresh worktree holds only what git tracks — no `.env`, no installed
 deps — and an agent that finds them missing invents values or skips the check.
 Every agent on that story gets it as `Workdir` and works only there. Dispatch them
 *without* `isolation: "worktree"`: a per-agent worktree cannot check out a branch
@@ -385,8 +396,8 @@ on opus, because it holds the invariants and makes every dispatch decision.
   cicd only ever runs first-time setup — cross-platform build correctness
   (SHA-pinning, the dist/-before-cargo-test ordering, a Linux build needing a real
   PNG) is subtle, one-shot, and the highest-blast-radius work in the run. refactor
-  plans its own moves with no planner behind it. seer runs once and shapes every
-  story.
+  plans its own moves with no planner behind it. seer sets the board at setup and
+  shapes every story.
 - **sonnet**: dev, reviewer, tester, security, scout, designer, verifier, archivist. dev executes a verified plan, so sonnet is enough. Archivist runs
   once, but its entry seeds every future project — a wrong pitfall compounds, so it
   is not worth haiku's saving.

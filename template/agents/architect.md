@@ -77,7 +77,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    instance, or `isolate: none` when it can't.
    Then write `scripts/bootstrap-worktree.sh <worktree-path> <slot>` encoding
    that section (bash; on Windows it runs under Git Bash): copy each `untracked:`
-   file from the main checkout, run `install:`, and give each `shared:` resource
+   file from the main checkout (each must be gitignored, or the worktree can't be
+   removed), run `install:`, and give each `shared:` resource
    the worktree's own instance derived from `<slot>` (port = base + slot, local
    deployment name suffixed, …). Idempotent. Exit non-zero with a one-line reason
    on anything it cannot do. `## Local setup` stays as the human-readable

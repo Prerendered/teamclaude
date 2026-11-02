@@ -20,11 +20,13 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 2. Every acceptance criterion maps to a passing test in team/test-report.md and
    on the branch, and every `[flow]` item in the plan has a passing flow test.
    A criterion with no passing test → FAIL. Bug card: its
-   regression test passes. Trivial card (no tester): skip this item.
+   regression test passes. Trivial, `contract-f<n>`, or `test-f<n>` card: skip this item.
 3. Plan conformance: diff the branch against the plan's Files and Contract plus
    its Amendments. A file outside the list, a changed public signature or data
    shape, or a new dependency → FAIL `unapproved deviation`. No plan (trivial,
    refactor, or bug card) → check against the card's Files instead.
+   A `contract-f<n>` holds only declarations in `types/` and `constants/`; a
+   `test-f<n>` holds only tests.
 4. Run the post-change checklist from .claude/skills/standards/ and the
    language files for the stack. Every violation cites its rule. A name that is
    a banned glossary synonym, or a domain concept missing from both the glossary

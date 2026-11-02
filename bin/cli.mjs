@@ -59,8 +59,13 @@ if (cmd !== 'init' && cmd !== 'update') fail(`unknown command '${cmd ?? ''}'\n${
 let stack = '', repertoire = '', force = false, trackTeam = false, dryRun = false;
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
-  if (a === '--stack') stack = argv[++i] ?? '';
-  else if (a === '--repertoire') repertoire = argv[++i] ?? '';
+  const value = () => {
+    const v = argv[++i];
+    if (!v || v.startsWith('--')) fail(`${a} needs a value`);
+    return v;
+  };
+  if (a === '--stack') stack = value();
+  else if (a === '--repertoire') repertoire = value();
   else if (a === '--force') force = true;
   else if (a === '--track-team') trackTeam = true;
   else if (a === '--dry-run') dryRun = true;
@@ -217,13 +222,13 @@ const readState = async (key) => {
 const IGNORE_MARK = '# teamclaude working state — local only';
 const TEAM_RULE = '/team/';
 const WORKTREE_RULE = '/.worktrees/';
-const BACKUP_RULE = `/${BACKUP_ROOT}/`;
+const BACKUP_RULES = [`/${BACKUP_ROOT}/`, '/CLAUDE.md.bak'];
 const covers = (lines, rule) => {
   const bare = rule.replace(/^\/|\/$/g, '');
   return lines.some((l) => [bare, `/${bare}`, `${bare}/`, `/${bare}/`].includes(l.trim()));
 };
 const missingRules = (lines, withBackup) =>
-  [...(trackTeam ? [] : [TEAM_RULE]), WORKTREE_RULE, ...(withBackup ? [BACKUP_RULE] : [])].filter((r) => !covers(lines, r));
+  [...(trackTeam ? [] : [TEAM_RULE]), WORKTREE_RULE, ...(withBackup ? BACKUP_RULES : [])].filter((r) => !covers(lines, r));
 const ignoreChanges = async (withBackup) => {
   const lines = existsSync('.gitignore') ? (await read('.gitignore')).split(/\r?\n/) : [];
   return [
@@ -232,6 +237,7 @@ const ignoreChanges = async (withBackup) => {
   ];
 };
 const syncGitignore = async (withBackup) => {
+  if (!(await ignoreChanges(withBackup)).length) return;
   const had = existsSync('.gitignore') ? await read('.gitignore') : '';
   let lines = had.split(/\r?\n/);
   if (trackTeam) lines = lines.filter((l) => l !== TEAM_RULE);

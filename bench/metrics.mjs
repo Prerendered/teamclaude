@@ -14,20 +14,21 @@ const count = (event) => events.filter((e) => e.event === event).length;
 const TIERS = ['haiku', 'sonnet', 'opus', 'fable'];
 const dispatches = events.filter((e) => e.event === 'dispatch');
 
-// A tier escalation is an agent working a card on a higher tier than it started on.
-const firstTier = new Map();
+// A tier escalation is an agent, in one mode on one card, moving to a higher tier.
+const tierSoFar = new Map();
 let tierEscalations = 0;
-for (const { agent, card, model } of dispatches) {
-  const key = `${agent}/${card}`;
-  if (!firstTier.has(key)) firstTier.set(key, model);
-  else if (TIERS.indexOf(model) > TIERS.indexOf(firstTier.get(key))) tierEscalations++;
+for (const { agent, mode, card, model } of dispatches) {
+  if (!card) continue;
+  const key = `${agent}/${mode}/${card}`;
+  if (tierSoFar.has(key) && TIERS.indexOf(model) > TIERS.indexOf(tierSoFar.get(key))) tierEscalations++;
+  if (!tierSoFar.has(key) || TIERS.indexOf(model) > TIERS.indexOf(tierSoFar.get(key))) tierSoFar.set(key, model);
 }
 
 const hours = (events.length ? Date.parse(events.at(-1).ts) - Date.parse(events[0].ts) : 0) / 3_600_000;
 
 const foundBy = read('team/bug-board.md').split(/\r?\n/)
   .filter((line) => /^\|\s*B\d+\s*\|/.test(line))
-  .map((line) => line.split('|')[4].trim());
+  .map((line) => line.split(/(?<!\\)\|/)[4].trim());
 const bugs = (source) => foundBy.filter((f) => f === source).length;
 
 const version = read('team/state.md').match(/^team-version:\s*(.+)$/m)?.[1].trim() ?? '?';

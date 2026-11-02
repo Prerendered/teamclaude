@@ -62,12 +62,13 @@ EOF
 }
 
 fail() { echo "error: $*" >&2; exit 1; }
+need_value() { if [ -z "${2:-}" ] || [ "${2#--}" != "$2" ]; then fail "$1 needs a value"; fi; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --stack)      STACK="${2:-}"; shift 2 ;;
-    --version)    VERSION="${2:-}"; shift 2 ;;
-    --repertoire) REPERTOIRE="${2:-}"; shift 2 ;;
+    --stack)      need_value "$@"; STACK="$2"; shift 2 ;;
+    --version)    need_value "$@"; VERSION="$2"; shift 2 ;;
+    --repertoire) need_value "$@"; REPERTOIRE="$2"; shift 2 ;;
     --local)      LOCAL=1; shift ;;
     --force)      FORCE=1; shift ;;
     --update)     UPDATE=1; shift ;;
@@ -154,6 +155,9 @@ missing_ignore_rules() {
   fi
   if [ -n "$PLAN_BACKUP" ] && ! grep -qsxE '[[:space:]]*/?\.teamclaude-backup/?[[:space:]]*' .gitignore; then
     echo "$BACKUP_RULE"
+  fi
+  if [ -n "$PLAN_BACKUP" ] && ! grep -qsxE '[[:space:]]*/?CLAUDE\.md\.bak[[:space:]]*' .gitignore; then
+    echo "/CLAUDE.md.bak"
   fi
 }
 
@@ -305,7 +309,7 @@ fi
 MISSING="$(missing_ignore_rules)"
 if [ -n "$MISSING" ]; then
   if grep -qxF "$IGNORE_MARK" .gitignore; then
-    awk -v mark="$IGNORE_MARK" -v add="$MISSING" '{ print } $0 == mark { print add }' .gitignore > .gitignore.tmp
+    ADD="$MISSING" awk -v mark="$IGNORE_MARK" '{ print } $0 == mark { print ENVIRON["ADD"] }' .gitignore > .gitignore.tmp
     mv .gitignore.tmp .gitignore
   else
     if [ -s .gitignore ]; then

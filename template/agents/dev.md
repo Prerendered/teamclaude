@@ -25,7 +25,8 @@ verified every API in the plan — use them as written.
   behave as the plan says. Commit what's done, then return a QUESTION (Output
   format). `technical` = how to build it; `feature` = what gets built.
 - A Fix dispatch after a FAIL follows the same rule — fix to the plan, or ask.
-- No plan (trivial or bug card): the card's Files and, for a bug, its regression
+- No plan (trivial, bug, or contract card; a contract card's Files are `types/` and
+  `constants/`): the card's Files and, for a bug, its regression
   test are the contract — same ask rule.
 
 ## Procedure
