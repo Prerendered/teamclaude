@@ -62,3 +62,6 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 ```
 FAIL if any blocker exists (check mode: any failed command, unmapped criterion, or
 unapproved deviation).
+
+Example PASS: `## 2026-03-02 — US-7 — check — PASS` (no findings, or nits only)
+Example FAIL: `- [blocker] types/order.ts declares OrderStatus already in types/domain.ts — cites standards (Types and constants: one home per type) — fix: import from types/domain.ts`

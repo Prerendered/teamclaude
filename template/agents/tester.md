@@ -70,3 +70,6 @@ gap>`; the plan is the contract, so never add it silently.
 ### Bugs filed
 - <B# + severity + one-line repro>
 ```
+
+Example: `- [✗] "rejects a past kickoff" — tests/flows/predict.spec.ts::rejects past kickoff — fails: API accepts it (code result for dev, test matches plan)`
+Example: `- unverified — confirm: Linux-only asset path; run on macOS`
