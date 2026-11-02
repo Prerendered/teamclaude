@@ -50,3 +50,6 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 - <step the User does> — <expected result>
 ```
 FAIL if any finding is critical or high.
+
+Example ✓: `- [✓] US-3 "list shows 20 most recent" — chrome-devtools — 20 rows rendered; GET /api/items 200, 20 objects; no console errors`
+Example ✗: `- [✗] US-3 "empty state when no items" — chrome-devtools — blank panel, no copy; console: TypeError items.map of undefined → B14 high`

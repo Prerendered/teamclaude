@@ -42,3 +42,6 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 ## [date] — [story|feature] — [card|feature] — PASS|FAIL
 - [critical|high|medium|low] <vuln> @ <file:line> — exploit: <how> — fix: <suggestion>
 ```
+
+Example high: `- [high] unchecked redirect target @ src/features/auth/callback.ts:41 — exploit: a crafted next= sends a signed-in user offsite — fix: allow-list internal paths`
+Example clear: `## 2026-03-02 — US-7 — card — PASS` (every checklist class cleared; dependency check: 0 known CVEs, no unpinned versions)
