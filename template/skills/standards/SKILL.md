@@ -170,6 +170,7 @@ src/
 ├── types/<domain>        ← every type (Types and constants)
 └── constants/<domain>    ← every constant
 tests/                    ← mirrors src/ (Tests), plus flows/ and tools/
+scripts/                  ← repo tooling the team runs, never application code
 ```
 
 Folder names follow the language's casing (`Types/`, `Constants/` in C#).

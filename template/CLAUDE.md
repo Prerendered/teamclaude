@@ -349,10 +349,15 @@ exists is attached without `-b`: `git worktree add .worktrees/<ticket> <branch>`
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
-Bootstrap every new worktree per architecture.md ## Local setup before dispatch:
+Bootstrap every new worktree before dispatch:
+`scripts/bootstrap-worktree.sh .worktrees/<ticket> <slot>`, where `<slot>` is the
+lowest integer not held by another live worktree (record it on the card's state.md
+## In progress line). Non-zero exit → stop; fix the environment or the script, never
+dispatch into a half-bootstrapped tree. Script absent (an existing project, or a
+brownfield one before its card merges) → apply architecture.md ## Local setup by hand:
 copy each `untracked:` file from the main checkout, run `install:`, and give each
-`shared:` resource the worktree's own instance (port, local deployment) as
-recorded. A fresh worktree holds only what git tracks — no `.env`, no installed
+`shared:` resource the worktree's own instance (port, local deployment) as recorded;
+and file a card for the script if none exists. A fresh worktree holds only what git tracks — no `.env`, no installed
 deps — and an agent that finds them missing invents values or skips the check.
 Every agent on that story gets it as `Workdir` and works only there. Dispatch them
 *without* `isolation: "worktree"`: a per-agent worktree cannot check out a branch
