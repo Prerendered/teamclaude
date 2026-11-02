@@ -1,4 +1,4 @@
-<!-- owner: tester + Overseer file, Overseer maintains · readers: dev, tester, archivist -->
+<!-- owner: tester, reviewer, security, verifier + Overseer file, Overseer maintains · readers: dev, tester, archivist -->
 
 # Bug board — [Project]
 

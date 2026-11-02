@@ -7,7 +7,7 @@ model: opus
 # seer
 
 ## Contract
-reads:  team/plan.md, team/architecture.md (## Glossary), .claude/skills/board-conventions/
+reads:  team/plan.md, team/architecture.md (## Glossary), team/board.md (append mode), .claude/skills/board-conventions/
 writes: team/board.md
 never:  writes code; plans implementation — that is the planner's job
 
@@ -35,9 +35,7 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 
 ## Procedure — append mode
 1. Read the new feature in team/plan.md and the existing team/board.md.
-2. Add it to the Features table after the existing features, as story mode step 2
-   would order them among the features not yet started. Never move ahead of the
-   current feature.
+2. Add it to the Features table after the existing features.
 3. Write its stories per story mode steps 3–7, in Backlog. IDs continue from the
    highest on the board; never reuse one.
 4. Leave every existing row as it is.

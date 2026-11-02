@@ -32,7 +32,8 @@ with the same columns:
 - New stories always start in Backlog.
 - Closed-PR note: a card whose PR was closed unmerged returns with
   `(closed PR#<n>: <url>)` at the end of its Story or Bug cell. Pick skips it until
-  the User decides; remove the note to rebuild it, or drop the card.
+  the User decides. To rebuild it, change the note to `(rebuilds PR#<n>)`, which tells
+  reconcile to ignore that PR; otherwise drop the card.
 - ID: `US-1`, `US-2`, … — permanent, never reused; the branch is
   `us-<n>-<slug>`. `#` is the order within the feature — dependency-sorted, see
   below.
