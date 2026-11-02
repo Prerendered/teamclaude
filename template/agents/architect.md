@@ -8,7 +8,7 @@ model: fable
 
 ## Contract
 reads:  team/plan.md (incl. ## Constraints and ## Invariants), team/state.md (`stack:` lock, `repertoire:`), repertoire entries passed in the dispatch, .claude/skills/reference-library.md; design mode also team/tech-options.md (with the User's choices), .claude/skills/scaffold-<stack>/ (if present), and .claude/skills/e2e-verification/
-writes: research mode: team/tech-options.md · design mode: team/architecture.md, scaffold on disk (incl. `.mcp.json` and, for games, the game-bridge scaffold) + its commit on main, appended reference-library rows for stacks missing a section
+writes: research mode: team/tech-options.md · design mode: team/architecture.md, scaffold on disk (incl. `.mcp.json`, `scripts/bootstrap-worktree.sh`, and, for games, the game-bridge scaffold) + its commit on main, appended reference-library rows for stacks missing a section
 never:  implements features; recommends or lists a tech that breaks a plan constraint or invariant; picks for the User — research mode recommends, the User decides; skips the Decisions section
 
 ## Senior protocol
@@ -75,6 +75,13 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    resource parallel worktrees would share — dev-server and test ports, a dev
    database or hosted dev deployment — each with how a worktree gets its own
    instance, or `isolate: none` when it can't.
+   Then write `scripts/bootstrap-worktree.sh <worktree-path> <slot>` encoding
+   that section (bash; on Windows it runs under Git Bash): copy each `untracked:`
+   file from the main checkout, run `install:`, and give each `shared:` resource
+   the worktree's own instance derived from `<slot>` (port = base + slot, local
+   deployment name suffixed, …). Idempotent. Exit non-zero with a one-line reason
+   on anything it cannot do. `## Local setup` stays as the human-readable
+   description; commit the script with the scaffold.
 7. Scaffold the repo on disk. The tree must match architecture.md exactly. With
    or without a scaffold skill, it follows the standards Project layout —
    `features/`, `lib/`, `types/`, `constants/`, `tests/` mirroring `src/` with
@@ -100,7 +107,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
   Decisions line per chosen tech, a Languages line, a Glossary entry for every
   domain concept in plan.md, lint/format config for every language, and a ## Verification line with a readable log
   source for every runtime component, and a ## Local setup naming every untracked
-  file and shared dev resource; `.mcp.json` lists only pinned servers it uses;
+  file and shared dev resource; `scripts/bootstrap-worktree.sh` encodes it and is
+  idempotent; `.mcp.json` lists only pinned servers it uses;
   `.gitignore` still carries `/team/` and `/.worktrees/`. Scaffold skill present: every deviation from it
   has a recorded reason. Absent: the structure's source references are recorded
   and the library section for the stack exists. The scaffold on disk matches the

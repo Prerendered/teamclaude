@@ -29,6 +29,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    ## Local setup: the untracked files a fresh checkout needs (env files, local
    config — names only, never values), the install command, and every dev
    resource two checkouts would share (ports, a dev database or deployment).
+   `scripts/bootstrap-worktree.sh` absent → file its absence as a candidate refactor
+   card; never write it yourself.
 3. Write team/map.md per its template: where things live, entry points, key
    modules, naming/idiom conventions, and danger zones (fragile or
    high-blast-radius code).

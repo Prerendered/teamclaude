@@ -45,6 +45,7 @@ stream.
 | Game / mod | the project's game test bridge (layer 3) | bridge `read_logs` (in-memory buffer) + the loader's own log in the game folder |
 
 Rules:
+- The verifier's worktree is bootstrapped like any other, on its own slot.
 - Every component needs a log source Claude can read without the User. "Look at
   the window" is not a log source.
 - An error in the logs, console, or network during a flow is a finding even if
