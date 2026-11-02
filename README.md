@@ -147,9 +147,10 @@ by config in CI; the prose covers only what review must catch.
 
 **Project layout** (standards, same for every stack): `src/` holds `features/<domain>/`, `lib/`, `types/<domain>` and `constants/<domain>` — every type and constant has one home, and a feature’s new ones land first in a small contract PR so parallel stories never collide. `tests/` at the root mirrors `src/` path for path, with `tests/flows/` for flow tests and `tests/tools/` for test tooling (MCP servers, the game bridge). Logs are never written to disk. Every folder carries a short README and the root README has a Project structure section, so a new dev or a fresh Claude session can find their way without `team/`.
 
-**GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). Commits and
-PR titles are `<type>: <description>` — the PR title becomes the single squash commit on
-main. PR bodies are lean: the ticket line, a short summary, the criteria checklist.
+**GitHub conventions.** One branch per ticket (`us-<n>-<slug>`, `b<n>-<slug>`). A PR title is
+only the card ID (`US-123`); everything else goes in the PR body: the story title, a short
+summary, the criteria checklist. Commits are `<type>: <description>`, and the Overseer sets
+that as the subject of the single squash commit on main when it merges.
 Everything is authored under your own git/gh identity with no AI attribution lines, so
 reviews are posted as PR comments (GitHub won't let an author approve their own PR) and
 green CI is the merge gate. A private repo on GitHub Free has no branch protection or
