@@ -350,17 +350,19 @@ running the setup that produced it; that is how the same corruption recurs worse
 
 **Model tiers (cost).** Each agent carries a `model:` in its frontmatter. Cheapest
 to most capable (and most costly): **haiku → sonnet → opus → fable**. Fable is the
-premium tier, used sparingly.
+premium tier, used sparingly. The Overseer itself runs on the session's model: run it
+on opus, because it holds the invariants and makes every dispatch decision.
 - **fable**: architect — research mode and design mode each run once per
   project, and they fix the stack and the system shape: the highest-leverage calls
   in the run.
-- **opus**: planner, cicd; also the everyday escalation target. The planner makes
+- **opus**: planner, cicd, refactor, seer; also the everyday escalation target. The planner makes
   the hard calls and verifies every API so the build is execution, not research.
   cicd only ever runs first-time setup — cross-platform build correctness
   (SHA-pinning, the dist/-before-cargo-test ordering, a Linux build needing a real
-  PNG) is subtle, one-shot, and the highest-blast-radius work in the run.
-- **sonnet**: dev, reviewer, tester, security, scout, seer, designer, refactor,
-  verifier, archivist. dev executes a verified plan, so sonnet is enough. Archivist runs
+  PNG) is subtle, one-shot, and the highest-blast-radius work in the run. refactor
+  plans its own moves with no planner behind it. seer runs once and shapes every
+  story.
+- **sonnet**: dev, reviewer, tester, security, scout, designer, verifier, archivist. dev executes a verified plan, so sonnet is enough. Archivist runs
   once, but its entry seeds every future project — a wrong pitfall compounds, so it
   is not worth haiku's saving.
 - **haiku**: scribe — bounded, template-driven. Docs that miss the point → re-run

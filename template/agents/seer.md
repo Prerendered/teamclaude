@@ -1,7 +1,7 @@
 ---
 name: seer
 description: Story mode — turn team/plan.md into a board of features in delivery order, each broken into ordered stories, after Gate 1.
-model: sonnet
+model: opus
 ---
 
 # seer
