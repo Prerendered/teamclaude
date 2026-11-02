@@ -173,7 +173,7 @@ for destructive actions.
 | `reviewer` | diff, plan, lessons.md, criteria, test-report.md, standards, architecture.md | review-report.md, PR review comment, bug cards (feature mode) | implements fixes; approves its own PR on GitHub |
 | `security` | PR diff / feature diff, security-standards, architecture.md | security-report.md, PR review comment | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
-| `tester` | story criteria, bug card, or coverage gap, plan test list, lessons.md, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
+| `tester` | story criteria, bug card, or coverage gap, plan test list, lessons.md, code, standards | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
 | `verifier` | feature criteria, tests/flows/, architecture.md ## Verification, e2e-verification, `.mcp.json` servers, design.md + design-system (UI) | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
 | `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
 | `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |

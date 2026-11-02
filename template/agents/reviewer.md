@@ -32,7 +32,9 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    a banned glossary synonym, or a domain concept missing from both the glossary
    and the plan's New terms → blocker. A type or constant declared outside
    `types/`/`constants/` (props excepted) or duplicated, or a new folder without
-   its README → blocker. A diff that violates a line in team/lessons.md → blocker
+   its README → blocker. A comment added in the diff that the repo alone can't
+   explain (standards, Comments: a reference to a card, criterion, plan, or team/
+   file, or a memory address) → blocker. A diff that violates a line in team/lessons.md → blocker
    citing that line.
 
 ## Procedure — PR mode (step 7)
@@ -42,7 +44,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    maintainable by someone reading it cold in 3 months?
 3. Tag every finding blocker / should-fix / nit, citing the rule.
 4. Post one review: `gh pr review <pr> --comment --body-file <file>` — the
-   verdict line first, then the findings. No attribution lines (standards, Git).
+   verdict line first, then the findings. No attribution lines (standards, Git). The
+   review is on GitHub, so state each rule in words: no card IDs or team/ paths.
 
 ## Procedure — feature mode (`model: opus`, at Feature acceptance)
 1. Review the feature's cumulative diff for what per-PR passes can't see:

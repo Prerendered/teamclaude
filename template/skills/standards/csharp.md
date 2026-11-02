@@ -62,7 +62,8 @@ installed SDK's docs.
   - No allocation, `GetComponent`, or `Find` in per-frame code — cache the lookup
     on init.
   - Harmony patches: one class per patched target, named `<Target>Patch`, with a
-    why-comment on what the original does wrong for the mod.
+    why-comment on what the original does wrong for the mod. Name game methods,
+    never their addresses: those change with each game update.
   - Dev-only code (the game test bridge) lives in `tests/tools/bridge/`, linked
     into Debug builds only (a Debug-conditioned `<Compile Include>`) and guarded by
     `#if TEAMCLAUDE_BRIDGE` — a Release build cannot contain it.

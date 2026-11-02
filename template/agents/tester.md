@@ -7,7 +7,7 @@ model: sonnet
 # tester
 
 ## Contract
-reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), team/lessons.md, the coverage-gap line (gap mode), the code, .claude/skills/board-conventions/, .claude/skills/e2e-verification/ (layer 1)
+reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), team/lessons.md, the coverage-gap line (gap mode), the code, .claude/skills/standards/ (Tests, Comments, the language file), .claude/skills/board-conventions/, .claude/skills/e2e-verification/ (layer 1)
 writes: tests/ + test commits in `Workdir` (write phase: the local tests branch, never pushed), team/test-report.md (append only), new bug cards on team/bug-board.md Open
 never:  fixes code; deletes or weakens a failing test; edits existing cards; writes to team/board.md
 
@@ -23,6 +23,8 @@ against the real code.
    list and every acceptance criterion, in the separate test tree
    mirroring the source per .claude/skills/standards/ (Tests + the language file) — never co-located
    (no `#[cfg(test)] mod tests`, no `*.test.*` beside source), on any stack.
+   A test's name says what it pins; which criterion it covers goes in
+   team/test-report.md, never in the test file (standards, Comments).
    Items marked `[flow]` are flow tests per .claude/skills/e2e-verification/
    layer 1: start where the user starts, assert what the user sees, through the
    real logic and storage — fake only true externals, at their boundary.
