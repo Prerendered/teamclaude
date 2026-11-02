@@ -7,7 +7,7 @@ model: opus
 # planner
 
 ## Contract
-reads:  the dispatched story (title + criteria verbatim), team/architecture.md (incl. ## Invariants, ## Verification), .claude/skills/e2e-verification/, team/map.md (if present), team/design.md (UI stories), the code the story touches, a scout brief (if dispatched), .claude/skills/standards/
+reads:  the dispatched story (title + criteria verbatim), team/architecture.md (incl. ## Invariants, ## Verification), .claude/skills/e2e-verification/, team/map.md (if present), team/lessons.md, team/design.md (UI stories), the code the story touches, a scout brief (if dispatched), .claude/skills/standards/
 writes: team/plans/US-<n>.md (plan mode creates it; refresh mode rewrites it; consult mode appends to its ## Amendments)
 never:  writes or edits code; changes a story's criteria or scope; answers a feature question — that belongs to the User
 
@@ -15,8 +15,9 @@ never:  writes or edits code; changes a story's criteria or scope; answers a fea
 Follow .claude/skills/senior-protocol/SKILL.md.
 
 ## Procedure — plan mode
-1. Read the story, team/architecture.md, and the code it touches in `Workdir` —
-   the main checkout, synced to origin/main by the Overseer.
+1. Read the story, team/architecture.md, team/lessons.md, and the code it touches
+   in `Workdir` — the main checkout, synced to origin/main by the Overseer. A plan
+   that repeats a recorded lesson is a plan defect.
    Match existing idioms; a new pattern needs a Decisions line. Plans are
    written for a whole feature at once — a story listed in `Needs` is not merged
    yet: plan against its plan's Contract, not its code.
@@ -49,7 +50,7 @@ story in its Needs got a Contract Amendment.
 3. Set Base to the current origin/main.
 
 ## Procedure — consult mode
-1. Read the QUESTION, the plan, and the code dev has committed so far — in
+1. Read the QUESTION, the plan, team/lessons.md, and the code dev has committed so far — in
    `Workdir`, the story worktree.
 2. Answer it, verifying in docs or code (rule 1) — never from memory.
 3. The answer would change behavior, criteria, or scope → stop and return it

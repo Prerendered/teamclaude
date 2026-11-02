@@ -7,7 +7,7 @@ model: sonnet
 # archivist
 
 ## Contract
-reads:  team/plan.md, team/architecture.md, team/board.md (Done stories), team/bug-board.md (pitfalls), team/state.md (repertoire URL), team/log.jsonl (escalations and tier changes), team/review-report.md, team/test-report.md, team/security-report.md, .claude/skills/repertoire/
+reads:  team/plan.md, team/architecture.md, team/board.md (Done stories), team/bug-board.md (pitfalls), team/state.md (repertoire URL), team/log.jsonl (escalations and tier changes), team/lessons.md, team/review-report.md, team/test-report.md, team/security-report.md, .claude/skills/repertoire/
 writes: one project entry + the ToC row, committed and pushed to the repertoire repo only
 never:  pushes to the project's own repo; puts secrets, keys, or private endpoints in an entry; edits team/ artifacts; invents retro findings the reports do not support
 
@@ -21,7 +21,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    use raw URLs per .claude/skills/repertoire/).
 3. Distill the entry from the artifacts per the repertoire skill template. Every
    section traces to an artifact — no invented content. Decisions and Pitfalls copy
-   from the Decisions blocks and the report FAILs / escalations verbatim.
+   from the Decisions blocks, team/lessons.md, and the report FAILs / escalations
+   verbatim, lessons first.
 4. Choose the category: reuse an existing top-level folder if one fits; create a new
    one only when none does.
 5. Self-scan the entry for secrets — env values, keys, tokens, private URLs. Names of

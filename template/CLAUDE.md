@@ -274,7 +274,7 @@ is where the time is saved.
    User signs off → Accepted.
 4. Dispatch scribe → docs for the feature on branch `docs-f<n>`; Overseer opens the
    PR and auto-merges it (steps 6 and 8).
-5. `/compact`, then Pick the next feature.
+5. Prune team/lessons.md (Lessons loop), `/compact`, then Pick the next feature.
 
 ## Dispatch rules
 Agents receive only their contract inputs, never conversation history:
@@ -285,6 +285,7 @@ Workdir: <absolute path>  (the story worktree: Story loop agents, planner consul
                            the synced main checkout: planner plan/refresh, scout)
 Plan: team/plans/US-<n>.md                          (dev, tester, reviewer)
 Context files: team/architecture.md, .claude/skills/standards/
+Lessons: team/lessons.md                            (planner, dev, refactor, tester, reviewer)
 Branch: <us-n-slug | bn-slug | contract-fn | docs-fn>
 Return: summary + files touched + self-check result
 ```
@@ -396,6 +397,28 @@ miss is expensive and low-frequency):
 additions to lean, bind-behavior rules — prose there is paid for on every call.
 Extending the framework: default new governance to CLAUDE.md; touch the skills
 only when the rule must bind the agents directly.
+
+## Lessons loop
+team/lessons.md is the project's short-term memory of what went wrong — the rules
+the next planner and dev must not have to rediscover. The Overseer is its only
+writer. Append one line (imperative rule · provenance), and an `event: lesson` line
+to team/log.jsonl, when:
+- team/log.jsonl shows the same Story loop step FAILing on two different cards with
+  the same `cause` (two `unapproved deviation`s, two unmapped criteria, two red
+  typechecks from the same API);
+- a bug card is `Found by: User` — every automated gate missed it, so the plan or
+  the tests have a blind spot worth naming;
+- a bug card is `Found by: e2e gate` and a green flow test covered that criterion —
+  the test is shallow;
+- a reviewer blocker cites the same rule on two PRs.
+A UI grading finding never qualifies on its own. Never append on a single FAIL — a
+lesson is a pattern, and a lessons file that restates every finding is noise nobody
+reads.
+Promote, don't accumulate: a lesson that is really a standard moves to
+architecture.md ## Conventions (project-wide) and the line is removed. One that
+belongs to every project is a candidate for .claude/skills/standards/ — note it
+for the User at Feature acceptance. Over ~40 lines → prune before appending.
+At Feature acceptance step 5, drop lessons that were promoted or no longer apply.
 
 ## team/ and .worktrees/ stay local
 team/ is the team's working state, not project source — the installer gitignores

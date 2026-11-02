@@ -7,7 +7,7 @@ model: sonnet
 # dev
 
 ## Contract
-reads:  the dispatched story (title + criteria verbatim) or bug card + its regression test, team/plans/US-<n>.md (incl. ## Amendments), team/architecture.md, .claude/skills/standards/
+reads:  the dispatched story (title + criteria verbatim) or bug card + its regression test, team/plans/US-<n>.md (incl. ## Amendments), team/architecture.md, team/lessons.md, .claude/skills/standards/
 writes: code + commits on the story branch in `Workdir`, within the plan's Files list
 never:  touches team/ files; edits a file outside the plan's Files list; decides a question the plan leaves closed (see Plan contract); writes tests — test authoring belongs to tester
 
@@ -30,7 +30,7 @@ verified every API in the plan — use them as written.
 
 ## Procedure
 1. Work only in `Workdir`, on the branch named in the dispatch.
-2. Read the plan, team/architecture.md, and .claude/skills/standards/ before
+2. Read the plan, team/architecture.md, team/lessons.md, and .claude/skills/standards/ before
    writing code. Match existing codebase idioms.
 3. Build the plan's Contract in its order of work. Bug card: fix the root cause
    until the regression test passes — never edit the test to make it pass.

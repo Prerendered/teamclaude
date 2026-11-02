@@ -34,7 +34,7 @@ single ToC fetch finds precedent without opening any entry.
 ## Architecture summary        (3–6 lines + a link-free flow sketch)
 ## Decisions                   (verbatim Decisions lines, incl. rejected alternatives)
 ## Patterns that worked        (from architecture.md patterns, review-report passes)
-## Pitfalls / retro            (from review/test/security FAILs and escalations)
+## Pitfalls / retro            (team/lessons.md first, then review/test/security FAILs and escalations)
 ## References used             (reference-library rows this project consumed)
 ```
 Every section traces to a team/ artifact. No invented content.

@@ -111,7 +111,7 @@ PROJECT WRAP (if a repertoire is configured)
    └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
-The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Every session starts by reconciling worktrees, open PRs and a green main against the boards — `state.md` is a hint, git and GitHub are the truth.
+The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Every session starts by reconciling worktrees, open PRs and a green main against the boards — `state.md` is a hint, git and GitHub are the truth. Recurring findings become one-line rules in `team/lessons.md`, read by every builder and reviewer on the next card, and promoted into the standards when they outgrow the project.
 
 `team/board.md` starts with a Features table (Building → Testing → Accepted), then stories
 in sections — In Progress, In Review, Backlog, Done — so live work is at the top and history
@@ -162,19 +162,19 @@ for destructive actions.
 | Agent | reads | writes | never |
 |---|---|---|---|
 | `seer` | plan.md, board-conventions | board.md (features + stories) | writes code; plans implementation |
-| `planner` | story, architecture.md, map.md, design.md, the code, scout brief | plans/US-<n>.md (plan + Amendments) | writes code; changes criteria or scope; answers feature questions |
+| `planner` | story, architecture.md, map.md, lessons.md, design.md, the code, scout brief | plans/US-<n>.md (plan + Amendments) | writes code; changes criteria or scope; answers feature questions |
 | `architect` | plan.md (constraints, invariants), web research, stack skill, reference-library | tech-options.md (research), architecture.md + scaffold (design) | implements features; lists tech that breaks the plan; picks the stack for the User |
 | `scout` | existing codebase, codebase-survey, standards | architecture.md, map.md, recon briefs | writes code; invents structure the code lacks |
-| `dev` | one story or bug card, its plan, architecture.md, standards | code + commits on the story branch | touches team/; edits files outside the plan; decides what the plan leaves closed; writes tests |
-| `refactor` | refactor card, target code, map.md, refactor-catalog, standards | refactored code on a branch | changes behavior; adds features; edits tests; refactors untested code |
-| `reviewer` | diff, plan, criteria, test-report.md, standards, architecture.md | review-report.md, PR review comment, bug cards (feature mode) | implements fixes; approves its own PR on GitHub |
+| `dev` | one story or bug card, its plan, architecture.md, lessons.md, standards | code + commits on the story branch | touches team/; edits files outside the plan; decides what the plan leaves closed; writes tests |
+| `refactor` | refactor card, target code, map.md, lessons.md, refactor-catalog, standards | refactored code on a branch | changes behavior; adds features; edits tests; refactors untested code |
+| `reviewer` | diff, plan, lessons.md, criteria, test-report.md, standards, architecture.md | review-report.md, PR review comment, bug cards (feature mode) | implements fixes; approves its own PR on GitHub |
 | `security` | PR diff / feature diff, security-standards, architecture.md | security-report.md, PR review comment | implements fixes; passes without a dep check |
 | `designer` | plan.md, design-system, existing UI | design.md, token config | writes business logic; ships a token without rationale |
-| `tester` | story criteria or bug card, plan test list, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
+| `tester` | story criteria or bug card, plan test list, lessons.md, code | tests/ + commits on the story branch, test-report.md, bug-board.md cards | fixes code; deletes failing tests; writes to board.md |
 | `verifier` | feature criteria, architecture.md ## Verification, e2e-verification, `.mcp.json` servers | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
 | `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
 | `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |
-| `archivist` | team/ artifacts, state.md, log.jsonl, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
+| `archivist` | team/ artifacts, state.md, log.jsonl, lessons.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
 
 ## Brownfield: dropped into an existing project
 
