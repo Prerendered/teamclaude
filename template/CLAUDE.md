@@ -284,7 +284,9 @@ is where the time is saved.
    (Found by: e2e gate); a critical/high is fixed before step 3. Never report
    "end-to-end verified" for a path nothing exercised (senior-protocol rule 5) —
    an undriveable leg comes back as a `manual test — confirm` item. Layer 1 (flow
-   tests) already ran per story in CI.
+   tests) already ran per story in CI. Coverage gaps → dispatch tester
+   (gap mode) on the bug's branch, or on `test-f<n>` when there is no bug; it merges
+   through Story loop steps 5–8 like any card.
 3. User test — feature → Testing. Present a checklist: each story's criteria
    phrased as things to try, plus the verifier's manual-test items. User findings
    → bug-board (Found by: User); a critical/high is fixed before the next feature.
@@ -303,7 +305,7 @@ Workdir: <absolute path>  (the story worktree: Story loop agents, planner consul
 Plan: team/plans/US-<n>.md                          (dev, tester, reviewer)
 Context files: team/architecture.md, .claude/skills/standards/
 Lessons: team/lessons.md                            (planner, dev, refactor, tester, reviewer)
-Branch: <us-n-slug | bn-slug | contract-fn | docs-fn>
+Branch: <us-n-slug | bn-slug | contract-fn | docs-fn | test-fn>
 Return: summary + files touched + self-check result
 ```
 `Team dir` is mandatory on every dispatch. team/ is gitignored, so it does not
@@ -344,7 +346,7 @@ User, never reset or stash it away.
 **One worktree per ticket (mandatory).** Before a ticket's first dispatch — for a
 story, only once its feature's contract PR has merged — the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>`, branch per standards (Git)). A branch that already
+(ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>` / `test-f<n>`, branch per standards (Git)). A branch that already
 exists is attached without `-b`: `git worktree add .worktrees/<ticket> <branch>`. tester's write phase gets
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
