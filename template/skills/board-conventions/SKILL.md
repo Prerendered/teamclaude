@@ -30,6 +30,9 @@ with the same columns:
   (a card moving to Done goes to the top of Done), so the board reads top-down
   from live work to history. Done means the PR is merged.
 - New stories always start in Backlog.
+- Closed-PR note: a card whose PR was closed unmerged returns with
+  `(closed PR#<n>: <url>)` at the end of its Story or Bug cell. Pick skips it until
+  the User decides; remove the note to rebuild it, or drop the card.
 - ID: `US-1`, `US-2`, … — permanent, never reused; the branch is
   `us-<n>-<slug>`. `#` is the order within the feature — dependency-sorted, see
   below.
@@ -60,7 +63,7 @@ status; Fixed newest-first). Columns:
   (core flow broken, Done story's criterion fails) / medium (secondary flow broken
   or workaround exists) / low (cosmetic, edge case).
 - Open rows sorted by severity, then ID.
-- Found by: tester / reviewer / security / e2e gate / User.
+- Found by: tester / reviewer / security / e2e gate / session start / User.
 - Story: the ID of the story it breaks, or `—`.
 - Repro: one line — the exact input or steps and the observed vs expected result.
 

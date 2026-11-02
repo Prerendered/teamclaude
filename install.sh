@@ -192,7 +192,7 @@ else
   PLAN_REPLACE="$PLAN_REPLACE CLAUDE.md"
   PLAN_BACKUP="$PLAN_BACKUP CLAUDE.md"
 fi
-for f in "$SRC"/team/*.md; do
+for f in "$SRC"/team/*; do
   dest="team/$(basename "$f")"
   [ -e "$dest" ] || PLAN_SEED="$PLAN_SEED $dest"
 done
@@ -259,7 +259,7 @@ fi
 # Seed team/ stubs — never clobber existing project state.
 mkdir -p team
 SEEDED=""
-for f in "$SRC"/team/*.md; do
+for f in "$SRC"/team/*; do
   dest="team/$(basename "$f")"
   [ -e "$dest" ] || { cp "$f" "$dest"; SEEDED="$SEEDED $(basename "$f")"; }
 done
