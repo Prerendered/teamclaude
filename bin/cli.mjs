@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // teamclaude CLI — installs or updates the team template in the current project.
-//   bunx github:Prerendered/teamclaude init   [--stack next-convex] [--repertoire <url>] [--track-team] [--force]
-//   bunx github:Prerendered/teamclaude update [--stack next-convex] [--repertoire <url>] [--track-team]
+//   bunx github:Prerendered/teamclaude init   [--stack next-convex] [--repertoire <url>] [--track-team] [--force] [--dry-run]
+//   bunx github:Prerendered/teamclaude update [--stack next-convex] [--repertoire <url>] [--track-team] [--dry-run]
 // Only template-owned paths are ever removed: .claude/settings.json, a project's
-// own agents/skills, and everything outside .claude/ survive both commands.
+// own agents/skills, and everything outside .claude/ survive both commands. A
+// template-owned path that differs from this version is backed up before it goes.
 // Cross-platform (no bash). Keep the install logic in sync with install.sh.
 import { promises as fs } from 'node:fs';
 import { existsSync, readFileSync } from 'node:fs';
@@ -16,11 +17,12 @@ const ROOT = path.resolve(HERE, '..');
 const TEMPLATE = path.join(ROOT, 'template');
 const SCAFFOLDED = ['next-convex', 'tauri', 'expo', 'extension'];
 const VERSION = `v${JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version}`;
+const BACKUP_ROOT = '.teamclaude-backup';
 
 const fail = (msg) => { console.error(`error: ${msg}`); process.exit(1); };
 const usage = () =>
-  `Usage: teamclaude init   [--stack <name>] [--repertoire <url>] [--track-team] [--force]
-       teamclaude update [--stack <name>] [--repertoire <url>] [--track-team]
+  `Usage: teamclaude init   [--stack <name>] [--repertoire <url>] [--track-team] [--force] [--dry-run]
+       teamclaude update [--stack <name>] [--repertoire <url>] [--track-team] [--dry-run]
 
 Commands:
   init                Install the team into a project that has none.
@@ -28,6 +30,9 @@ Commands:
                       template's agents, skills, and CLAUDE.md; leaves your
                       .claude/settings.json, project-local agents/skills, and
                       team/ artifacts untouched.
+
+Anything replaced or removed that differs from ${VERSION} is first copied to
+${BACKUP_ROOT}/<timestamp>/, and a changed CLAUDE.md also to CLAUDE.md.bak.
 
 Flags:
   --stack <name>      Optional. The stack is normally chosen at the Tech gate; pass it only
@@ -39,7 +44,9 @@ Flags:
   --track-team        Commit team/ with the project. By default team/ is local
                       working state and gets added to .gitignore. Recorded in
                       team/state.md, so update keeps it.
-  --force             init only. Reinstall over an existing .claude/ directory.`;
+  --force             init only. Reinstall over an existing .claude/ directory.
+  --dry-run           List what would be added, replaced, removed, and backed up.
+                      Writes nothing.`;
 
 // ── parse args ────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -49,13 +56,14 @@ if (argv[0] === '-v' || argv[0] === '--version') { console.log(VERSION); process
 const cmd = argv[0];
 if (cmd !== 'init' && cmd !== 'update') fail(`unknown command '${cmd ?? ''}'\n${usage()}`);
 
-let stack = '', repertoire = '', force = false, trackTeam = false;
+let stack = '', repertoire = '', force = false, trackTeam = false, dryRun = false;
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   if (a === '--stack') stack = argv[++i] ?? '';
   else if (a === '--repertoire') repertoire = argv[++i] ?? '';
   else if (a === '--force') force = true;
   else if (a === '--track-team') trackTeam = true;
+  else if (a === '--dry-run') dryRun = true;
   else fail(`unknown flag: ${a}\n${usage()}`);
 }
 if (force && cmd === 'update') fail('--force is not valid for update — update never removes files it did not install');
@@ -87,11 +95,15 @@ const syncTree = async (name) => {
   return present.filter((e) => !owned.includes(e)).map((e) => `${name}/${e}`);
 };
 
+const isPruned = (entry, chosen) => Boolean(chosen) && entry.startsWith('scaffold-') && entry !== `scaffold-${chosen}`;
+
 // Stack decided up front → keep only its scaffold. Omitted → keep all; the Tech gate picks.
+// A scaffold skill the template doesn't ship is the project's own, so it stays.
 const pruneScaffolds = async (chosen) => {
   if (!chosen) return;
+  const shipped = await fs.readdir(path.join(TEMPLATE, 'skills'));
   for (const entry of await fs.readdir('.claude/skills')) {
-    if (entry.startsWith('scaffold-') && entry !== `scaffold-${chosen}`) {
+    if (isPruned(entry, chosen) && shipped.includes(entry)) {
       await fs.rm(path.join('.claude/skills', entry), { recursive: true, force: true });
     }
   }
@@ -100,15 +112,78 @@ const pruneScaffolds = async (chosen) => {
   }
 };
 
-// CLAUDE.md is template-owned, but a project may have appended to it. Keep a copy
-// when we are about to change it so nothing is lost to an untracked overwrite.
-const writeOverseer = async ({ backup }) => {
+// CLAUDE.md is template-owned, but a project may have its own or have appended to
+// this one. Keep a copy when we are about to change it so nothing is lost.
+const writeOverseer = async () => {
   const next = await read(path.join(TEMPLATE, 'CLAUDE.md'));
   const existed = existsSync('CLAUDE.md');
-  const changed = !existed || (await read('CLAUDE.md')) !== next;
-  if (changed && existed && backup) await fs.copyFile('CLAUDE.md', 'CLAUDE.md.bak');
+  const changed = existed && (await read('CLAUDE.md')) !== next;
+  if (changed) await fs.copyFile('CLAUDE.md', 'CLAUDE.md.bak');
   await fs.writeFile('CLAUDE.md', next);
-  return changed && existed && backup;
+  return changed;
+};
+
+const sameTree = async (a, b) => {
+  const [statA, statB] = await Promise.all([fs.stat(a), fs.stat(b)]);
+  if (statA.isDirectory() !== statB.isDirectory()) return false;
+  if (!statA.isDirectory()) return (await fs.readFile(a)).equals(await fs.readFile(b));
+  const [entriesA, entriesB] = await Promise.all([fs.readdir(a), fs.readdir(b)]);
+  if (entriesA.sort().join('\0') !== entriesB.sort().join('\0')) return false;
+  for (const entry of entriesA) {
+    if (!(await sameTree(path.join(a, entry), path.join(b, entry)))) return false;
+  }
+  return true;
+};
+
+// What this run would do. Read-only: --dry-run prints it, a real run backs up from it.
+const planInstall = async () => {
+  const plan = { add: [], replace: [], remove: [], seed: [], backup: [], ignore: [], same: 0 };
+  for (const kind of ['agents', 'skills']) {
+    for (const entry of await fs.readdir(path.join(TEMPLATE, kind))) {
+      const to = `.claude/${kind}/${entry}`;
+      const exists = existsSync(to);
+      const same = exists && (await sameTree(path.join(TEMPLATE, kind, entry), to));
+      if (kind === 'skills' && isPruned(entry, stack)) {
+        if (exists) plan.remove.push(to);
+        if (exists && !same) plan.backup.push(to);
+      } else if (!exists) plan.add.push(to);
+      else if (same) plan.same++;
+      else { plan.replace.push(to); plan.backup.push(to); }
+    }
+  }
+  if (!existsSync('CLAUDE.md')) plan.add.push('CLAUDE.md');
+  else if (await sameTree(path.join(TEMPLATE, 'CLAUDE.md'), 'CLAUDE.md')) plan.same++;
+  else { plan.replace.push('CLAUDE.md'); plan.backup.push('CLAUDE.md'); }
+  for (const f of await fs.readdir(path.join(TEMPLATE, 'team'))) {
+    if (!existsSync(path.join('team', f))) plan.seed.push(`team/${f}`);
+  }
+  plan.ignore = await ignoreChanges(plan.backup.length > 0);
+  return plan;
+};
+
+const printPlan = (plan) => {
+  console.log(`teamclaude ${VERSION} ${cmd} — dry run, nothing written.`);
+  const list = (label, items) => items.forEach((item) => console.log(`  ${label.padEnd(8)}${item}`));
+  list('add', plan.add);
+  list('replace', plan.replace);
+  list('remove', plan.remove);
+  list('seed', plan.seed);
+  list('backup', plan.backup);
+  list('ignore', plan.ignore);
+  console.log(`${plan.same} template entries already match. team/state.md gets the version stamp.`);
+  if (plan.backup.length) console.log(`Backups would go to ${BACKUP_ROOT}/<timestamp>/.`);
+};
+
+const backUp = async (paths) => {
+  if (!paths.length) return '';
+  const dir = path.join(BACKUP_ROOT, new Date().toISOString().replace(/[:.]/g, '-'));
+  for (const p of paths) await fs.cp(p, path.join(dir, p), { recursive: true });
+  return dir;
+};
+
+const reportBackup = (dir, paths, overseerChanged) => {
+  if (dir) console.log(`Backed up ${paths.length} item(s) that differ from ${VERSION} to ${dir}: ${paths.join(', ')}`);
+  if (overseerChanged) console.log('CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Merge anything you still need.');
 };
 
 // Seed team/ stubs — never clobber existing project state.
@@ -142,15 +217,25 @@ const readState = async (key) => {
 const IGNORE_MARK = '# teamclaude working state — local only';
 const TEAM_RULE = '/team/';
 const WORKTREE_RULE = '/.worktrees/';
+const BACKUP_RULE = `/${BACKUP_ROOT}/`;
 const covers = (lines, rule) => {
   const bare = rule.replace(/^\/|\/$/g, '');
   return lines.some((l) => [bare, `/${bare}`, `${bare}/`, `/${bare}/`].includes(l.trim()));
 };
-const syncGitignore = async () => {
+const missingRules = (lines, withBackup) =>
+  [...(trackTeam ? [] : [TEAM_RULE]), WORKTREE_RULE, ...(withBackup ? [BACKUP_RULE] : [])].filter((r) => !covers(lines, r));
+const ignoreChanges = async (withBackup) => {
+  const lines = existsSync('.gitignore') ? (await read('.gitignore')).split(/\r?\n/) : [];
+  return [
+    ...(trackTeam && lines.includes(TEAM_RULE) ? [`-${TEAM_RULE}`] : []),
+    ...missingRules(lines, withBackup).map((r) => `+${r}`),
+  ];
+};
+const syncGitignore = async (withBackup) => {
   const had = existsSync('.gitignore') ? await read('.gitignore') : '';
   let lines = had.split(/\r?\n/);
   if (trackTeam) lines = lines.filter((l) => l !== TEAM_RULE);
-  const missing = [...(trackTeam ? [] : [TEAM_RULE]), WORKTREE_RULE].filter((r) => !covers(lines, r));
+  const missing = missingRules(lines, withBackup);
   let next = lines.join('\n');
   if (missing.length) {
     const at = lines.indexOf(IGNORE_MARK);
@@ -192,12 +277,15 @@ const init = async () => {
   if (existsSync('.claude') && !force) {
     fail('.claude/ already exists — run `teamclaude update` to refresh it, or `init --force` to reinstall');
   }
+  const plan = await planInstall();
+  if (dryRun) { printPlan(plan); return; }
+  const backupDir = await backUp(plan.backup);
   const preserved = [...(await syncTree('agents')), ...(await syncTree('skills'))];
   await pruneScaffolds(stack);
-  await writeOverseer({ backup: force });
+  const overseerChanged = await writeOverseer();
   await seedTeam();
   await stampState();
-  await syncGitignore();
+  await syncGitignore(plan.backup.length > 0);
 
   if (stack) {
     console.log(`teamclaude ${VERSION} installed (stack: ${stack}).`);
@@ -206,6 +294,7 @@ const init = async () => {
     console.log(`teamclaude ${VERSION} installed. Stack: chosen at the Tech gate (all scaffold skills kept).`);
   }
   if (repertoire) console.log(`repertoire: ${repertoire} — consulted at intake, saved at wrap.`);
+  reportBackup(backupDir, plan.backup, overseerChanged);
   reportTeam();
   reportPreserved(preserved);
   console.log("Open Claude Code and say 'new project' to start intake.");
@@ -220,16 +309,19 @@ const update = async () => {
   stack = stack || (await readState('stack'));
   trackTeam = trackTeam || (await readState('team-tracked')) === 'true';
 
+  const plan = await planInstall();
+  if (dryRun) { printPlan(plan); return; }
+  const backupDir = await backUp(plan.backup);
   const preserved = [...(await syncTree('agents')), ...(await syncTree('skills'))];
   await pruneScaffolds(stack);
-  const backedUp = await writeOverseer({ backup: true });
+  const overseerChanged = await writeOverseer();
   const seeded = await seedTeam();
   await stampState();
-  await syncGitignore();
+  await syncGitignore(plan.backup.length > 0);
 
   console.log(`teamclaude ${from} → ${VERSION}. Refreshed: .claude/agents, .claude/skills, CLAUDE.md.`);
   console.log(stack ? `stack: ${stack} (from team/state.md unless overridden).` : 'stack: unset — all scaffold skills kept.');
-  if (backedUp) console.log('CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Diff it if you had added to it.');
+  reportBackup(backupDir, plan.backup, overseerChanged);
   if (seeded.length) console.log(`new team/ stubs added: ${seeded.join(', ')}`);
   reportTeam();
   reportPreserved(preserved);
