@@ -230,7 +230,7 @@ opening any entry. Entries never contain secrets — variable names only.
 
 Releases are annotated git tags (`v1.0`, `v1.1`, …). Every consuming project pins one — the installed tag is stamped into `team/state.md`, and re-running the installer with that tag reproduces identical files.
 
-**Major bump** when a change breaks consuming projects: artifact formats or paths in `team/`, agent contract changes (reads/writes/never), or installer flag changes. Everything else is a minor bump.
+**Major bump** when a change breaks consuming projects: artifact formats or paths in `team/`, agent contract changes (reads/writes/never), or installer flag changes. Everything else is a minor bump. A model-tier change is a minor bump but triggers a review of [DESIGN.md](DESIGN.md).
 
 ## Adding a new stack
 
