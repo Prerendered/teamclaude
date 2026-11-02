@@ -1,6 +1,6 @@
 ---
 name: seer
-description: Story mode — turn team/plan.md into a board of features in delivery order, each broken into ordered stories, after Gate 1.
+description: Story mode — turn team/plan.md into a board of features in delivery order, each broken into ordered stories, after Gate 1. Append mode — add a newly approved feature to an existing board without disturbing it.
 model: opus
 ---
 
@@ -32,6 +32,15 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    add a dependency for ordering's sake.
 7. Fill the Files column with each story's expected file footprint — this
    drives the Overseer's parallel-dispatch check.
+
+## Procedure — append mode
+1. Read the new feature in team/plan.md and the existing team/board.md.
+2. Add it to the Features table after the existing features, as story mode step 2
+   would order them among the features not yet started. Never move ahead of the
+   current feature.
+3. Write its stories per story mode steps 3–7, in Backlog. IDs continue from the
+   highest on the board; never reuse one.
+4. Leave every existing row as it is.
 
 ## Done when
 - Every plan feature maps to ≥1 story; every story has an ID, a feature, 4–7
