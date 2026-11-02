@@ -73,6 +73,9 @@ What review blocks, in every language (casing per the language file):
 Comments explain **why**, never **what**. If you need to explain what the code
 does, rename or split it.
 
+Write for a developer who has only the repo: no board, no plans, none of your
+research. A comment that needs any of those to make sense gets rewritten.
+
 Comment for: business rule rationale, non-obvious workarounds, external links,
 TODO/FIXME with owner. Nothing else — most functions carry no comment at all.
 
@@ -90,9 +93,13 @@ Never:
 - restate the code, or narrate it step by step;
 - changelog comments — `added for login`, `now uses the cache`, `fixed bug where…`.
   History lives in git, not in the file;
-- ticket, plan, or team/ references — `see US-12`, `per the plan`. team/ is local
-  and plans are gone after merge: the comment would point nowhere. State the
-  reason itself;
+- anything only the local team/ files explain: card, story, bug, feature, decision,
+  or invariant IDs (`US-12`, `card 68`, `(I2)`, `D5`, `F4`), criterion numbers,
+  document sections (`§07`), `per the plan`, team/ paths. None of it reaches the
+  repo, so the comment points nowhere. State the rule or reason itself;
+- memory addresses and offsets from research — `TryAdd (0x333D580)`. They change
+  with each build and say nothing to the reader. Name the method; an address the
+  code actually uses is a named constant;
 - comments addressed to the reviewer or the User — `as requested`, `note: …`;
 - commented-out code — delete it; git has it;
 - section dividers or banners inside a file.
@@ -127,6 +134,13 @@ Expect a few comment lines per screen of code, each saying what the code can't.
       // Warm-up sets don't count toward volume — coach's rule.
       return sets.filter(isWorkingSet).reduce(addRepsTimesWeight, 0)
     }
+
+✗ local IDs and research notes the reader can't look up:
+    // Reads only (I2), mirroring Storage.TryAdd (0x333D580): an empty slot wins, else…
+
+✓ the same reason in plain words:
+    // Picks a slot the way the game's Storage.TryAdd does, so the count we show is
+    // what a store will accept.
 
 ✓ a longer reason goes in the doc comment, not the body (syntax: language file):
     /**
@@ -300,7 +314,7 @@ leave for the user.
 
 ```
 Names: glossary terms only, no banned synonyms; verb+noun functions; boolean prefixes
-Comments: why-not-what; inline = one line; longer → doc comment (3 inline max without one); none where the code says it; no changelog, ticket/plan refs, reviewer notes, commented-out code
+Comments: why-not-what; inline = one line; longer → doc comment (3 inline max without one); none where the code says it; readable with only the repo: no reference to a card, criterion, plan, or team/ file, no memory addresses; no changelog, reviewer notes, commented-out code
 Header: one purpose line present
 Layout: new or reshaped folder has its README, updated in this PR
 Types/constants: only in types/ and constants/ domain files (props excepted); none duplicated; no magic numbers

@@ -26,7 +26,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 5. Feature mode, and card mode when the PR changes a manifest or lockfile: audit
    third-party dependencies for known CVEs and unpinned versions.
 6. Card mode: post the findings with `gh pr review <pr> --comment --body-file
-   <file>`, verdict line first, no attribution lines (standards, Git).
+   <file>`, verdict line first, no attribution lines (standards, Git), no card IDs
+   or team/ paths (GitHub can't see them).
 7. Append the entry to team/security-report.md with a PASS/FAIL verdict — FAIL if
    any critical or high exists.
 
