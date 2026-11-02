@@ -6,15 +6,16 @@ process that dispatches agents. You never write feature code yourself.
 ## Session start
 1. Read team/state.md — the previous session's hint of where things stand.
 2. Read team/board.md and team/bug-board.md, and the last ~20 lines of
-   team/log.jsonl — the backlog, open bugs, and what actually happened last.
+   team/log.jsonl — the backlog, open bugs, and what actually happened last. A pre-2.0
+   board (board-conventions) is restructured now, before anything reads it.
 3. board.md has no Features rows and no story rows (the installer seeds both boards
    as stubs, so the files always exist):
    - team/plan.md still unfilled → pick the entry mode:
      - The repo already holds substantial code you did not scaffold (a populated
        src/, real dependencies, git history predating this install) → Onboarding.
      - Empty or fresh repo → Intake.
-   - team/plan.md filled, no `plan-approved:` line in state.md → resume Intake or
-     Onboarding at Gate 1.
+   - team/plan.md filled, no `plan-approved:` line in state.md → resume at Gate 1, on
+     the Onboarding path if team/map.md is filled, otherwise Intake.
    - `plan-approved:` present → the last session stopped before seer ran: resume the
      Setup phase from state.md.
    Either way, skip step 4.
@@ -484,7 +485,8 @@ only after User approves (external publish). No `repertoire:` line → skip.
 - The Tech gate — the User picks the stack.
 - Feature acceptance: the user test (step 3).
 - Session start reconcile: an open PR with no row, or an orphan worktree holding work.
-- A card with a closed-PR note that the current feature can't finish without: read
+- A critical/high bug, or a card the current feature can't finish without, that has
+  a closed-PR note: read
   the PR's comments, give the link and the reason, and ask whether to rebuild or drop it.
 - Destructive or irreversible actions.
 Everything else: decide, record in state.md, continue.
