@@ -16,14 +16,20 @@ UPDATE=0
 REPERTOIRE=""
 LOCAL=0
 TRACK_TEAM=0
+DRY_RUN=0
+BACKUP_ROOT=".teamclaude-backup"
 IGNORE_MARK="# teamclaude working state — local only"
 IGNORE_RULE="/team/"
 WORKTREE_RULE="/.worktrees/"
+BACKUP_RULE="/$BACKUP_ROOT/"
 
 usage() {
   cat <<EOF
-Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--track-team] [--local] [--force]
-       install.sh --update [--stack <name>] [--version <tag>] [--track-team] [--local]
+Usage: install.sh [--stack <name>] [--version <tag>] [--repertoire <url>] [--track-team] [--local] [--force] [--dry-run]
+       install.sh --update [--stack <name>] [--version <tag>] [--track-team] [--local] [--dry-run]
+
+Anything replaced or removed that differs from the installed version is first
+copied to $BACKUP_ROOT/<timestamp>/, and a changed CLAUDE.md also to CLAUDE.md.bak.
 
 Flags:
   --update            Refresh an existing install. Replaces the template's agents,
@@ -47,6 +53,8 @@ Flags:
                       cloning. Use when running from a checkout — required for
                       private repos, where raw/anonymous fetch does not work.
   --force             Reinstall over an existing .claude/ directory.
+  --dry-run           List what would be added, replaced, removed, and backed up.
+                      Writes nothing.
 
 Env:
   TEAMCLAUDE_REPO   Override the source repo URL (ignored with --local).
@@ -64,6 +72,7 @@ while [ $# -gt 0 ]; do
     --force)      FORCE=1; shift ;;
     --update)     UPDATE=1; shift ;;
     --track-team) TRACK_TEAM=1; shift ;;
+    --dry-run)    DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "unknown flag: $1" ;;
   esac
@@ -126,6 +135,94 @@ else
   [ -d "$SRC" ] || fail "template/ missing in $VERSION — corrupt release?"
 fi
 
+is_pruned() {
+  [ -n "$STACK" ] || return 1
+  case "$1" in
+    "scaffold-$STACK") return 1 ;;
+    scaffold-*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Ignore rules this run needs that .gitignore doesn't already cover.
+missing_ignore_rules() {
+  if [ "$TRACK_TEAM" -eq 0 ] && ! grep -qsxE '[[:space:]]*/?team/?[[:space:]]*' .gitignore; then
+    echo "$IGNORE_RULE"
+  fi
+  if ! grep -qsxE '[[:space:]]*/?\.worktrees/?[[:space:]]*' .gitignore; then
+    echo "$WORKTREE_RULE"
+  fi
+  if [ -n "$PLAN_BACKUP" ] && ! grep -qsxE '[[:space:]]*/?\.teamclaude-backup/?[[:space:]]*' .gitignore; then
+    echo "$BACKUP_RULE"
+  fi
+}
+
+# What this run would do. Read-only: --dry-run prints it, a real run backs up from it.
+PLAN_ADD=""
+PLAN_REPLACE=""
+PLAN_REMOVE=""
+PLAN_SEED=""
+PLAN_BACKUP=""
+PLAN_SAME=0
+for kind in agents skills; do
+  for entry in "$SRC/$kind"/*; do
+    name="$(basename "$entry")"
+    to=".claude/$kind/$name"
+    if [ -e "$to" ] && diff -rq "$entry" "$to" >/dev/null 2>&1; then same=1; else same=0; fi
+    if [ "$kind" = skills ] && is_pruned "$name"; then
+      if [ -e "$to" ]; then
+        PLAN_REMOVE="$PLAN_REMOVE $to"
+        [ "$same" -eq 1 ] || PLAN_BACKUP="$PLAN_BACKUP $to"
+      fi
+    elif [ ! -e "$to" ]; then
+      PLAN_ADD="$PLAN_ADD $to"
+    elif [ "$same" -eq 1 ]; then
+      PLAN_SAME=$((PLAN_SAME + 1))
+    else
+      PLAN_REPLACE="$PLAN_REPLACE $to"
+      PLAN_BACKUP="$PLAN_BACKUP $to"
+    fi
+  done
+done
+if [ ! -f CLAUDE.md ]; then
+  PLAN_ADD="$PLAN_ADD CLAUDE.md"
+elif cmp -s "$SRC/CLAUDE.md" CLAUDE.md; then
+  PLAN_SAME=$((PLAN_SAME + 1))
+else
+  PLAN_REPLACE="$PLAN_REPLACE CLAUDE.md"
+  PLAN_BACKUP="$PLAN_BACKUP CLAUDE.md"
+fi
+for f in "$SRC"/team/*.md; do
+  dest="team/$(basename "$f")"
+  [ -e "$dest" ] || PLAN_SEED="$PLAN_SEED $dest"
+done
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  if [ "$UPDATE" -eq 1 ]; then cmd=update; else cmd=init; fi
+  echo "teamclaude $VERSION $cmd — dry run, nothing written."
+  for p in $PLAN_ADD; do printf '  %-8s%s\n' add "$p"; done
+  for p in $PLAN_REPLACE; do printf '  %-8s%s\n' replace "$p"; done
+  for p in $PLAN_REMOVE; do printf '  %-8s%s\n' remove "$p"; done
+  for p in $PLAN_SEED; do printf '  %-8s%s\n' seed "$p"; done
+  for p in $PLAN_BACKUP; do printf '  %-8s%s\n' backup "$p"; done
+  if [ "$TRACK_TEAM" -eq 1 ] && grep -qsxF "$IGNORE_RULE" .gitignore; then
+    printf '  %-8s%s\n' ignore "-$IGNORE_RULE"
+  fi
+  for rule in $(missing_ignore_rules); do printf '  %-8s%s\n' ignore "+$rule"; done
+  echo "$PLAN_SAME template entries already match. team/state.md gets the version stamp."
+  [ -z "$PLAN_BACKUP" ] || echo "Backups would go to $BACKUP_ROOT/<timestamp>/."
+  exit 0
+fi
+
+BACKUP_DIR=""
+if [ -n "$PLAN_BACKUP" ]; then
+  BACKUP_DIR="$BACKUP_ROOT/$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+  for p in $PLAN_BACKUP; do
+    mkdir -p "$BACKUP_DIR/$(dirname "$p")"
+    cp -R "$p" "$BACKUP_DIR/$p"
+  done
+fi
+
 # Replace each agent/skill the template ships, one by one. A blanket rm of .claude/
 # would also take settings.json and any agent or skill the project added itself.
 for kind in agents skills; do
@@ -137,10 +234,10 @@ for kind in agents skills; do
   done
 done
 
-# CLAUDE.md is template-owned, but a project may have appended to it — keep a copy
-# before replacing a changed one on update/force.
+# CLAUDE.md is template-owned, but a project may have its own or have appended to
+# this one — keep a copy before replacing a changed one.
 BACKED_UP=0
-if [ -f CLAUDE.md ] && ! cmp -s "$SRC/CLAUDE.md" CLAUDE.md && { [ "$UPDATE" -eq 1 ] || [ "$FORCE" -eq 1 ]; }; then
+if [ -f CLAUDE.md ] && ! cmp -s "$SRC/CLAUDE.md" CLAUDE.md; then
   cp CLAUDE.md CLAUDE.md.bak
   BACKED_UP=1
 fi
@@ -148,9 +245,11 @@ cp "$SRC/CLAUDE.md" ./CLAUDE.md
 
 # Stack chosen up front → keep only its scaffold skill (none for custom stacks).
 # Stack omitted → keep all scaffold skills; the Tech gate picks later.
+# A scaffold skill the template doesn't ship is the project's own, so it stays.
 if [ -n "$STACK" ]; then
   for dir in .claude/skills/scaffold-*; do
-    [ "$(basename "$dir")" = "scaffold-$STACK" ] || rm -rf "$dir"
+    name="$(basename "$dir")"
+    if is_pruned "$name" && [ -e "$SRC/skills/$name" ]; then rm -rf "$dir"; fi
   done
   if [ "$HAS_SCAFFOLD" -eq 1 ] && [ ! -d ".claude/skills/scaffold-$STACK" ]; then
     fail "scaffold skill for $STACK missing in $VERSION"
@@ -203,14 +302,7 @@ if [ "$TRACK_TEAM" -eq 1 ]; then
   grep -vxF "$IGNORE_RULE" .gitignore > .gitignore.tmp || true
   mv .gitignore.tmp .gitignore
 fi
-MISSING=""
-if [ "$TRACK_TEAM" -eq 0 ] && ! grep -qxE '[[:space:]]*/?team/?[[:space:]]*' .gitignore; then
-  MISSING="$IGNORE_RULE"
-fi
-if ! grep -qxE '[[:space:]]*/?\.worktrees/?[[:space:]]*' .gitignore; then
-  MISSING="${MISSING:+$MISSING
-}$WORKTREE_RULE"
-fi
+MISSING="$(missing_ignore_rules)"
 if [ -n "$MISSING" ]; then
   if grep -qxF "$IGNORE_MARK" .gitignore; then
     awk -v mark="$IGNORE_MARK" -v add="$MISSING" '{ print } $0 == mark { print add }' .gitignore > .gitignore.tmp
@@ -228,7 +320,6 @@ if [ "$UPDATE" -eq 1 ]; then
   echo "teamclaude $FROM → $VERSION. Refreshed: .claude/agents, .claude/skills, CLAUDE.md."
   if [ -n "$STACK" ]; then echo "stack: $STACK (from team/state.md unless overridden)."
   else echo "stack: unset — all scaffold skills kept."; fi
-  [ "$BACKED_UP" -eq 0 ] || echo "CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Diff it if you had added to it."
   [ -z "$SEEDED" ] || echo "new team/ stubs added:$SEEDED"
   echo "Existing team/ artifacts and .claude/settings.json were not touched."
 elif [ -z "$STACK" ]; then
@@ -242,6 +333,10 @@ fi
 if [ -n "$REPERTOIRE" ]; then
   echo "repertoire: $REPERTOIRE — consulted at intake, saved at wrap."
 fi
+if [ -n "$BACKUP_DIR" ]; then
+  echo "Backed up items that differ from $VERSION to $BACKUP_DIR:$PLAN_BACKUP"
+fi
+[ "$BACKED_UP" -eq 0 ] || echo "CLAUDE.md replaced — your previous copy is at CLAUDE.md.bak. Merge anything you still need."
 if [ "$TRACK_TEAM" -eq 1 ]; then
   echo "team/: tracked in git (team-tracked: true)."
 else

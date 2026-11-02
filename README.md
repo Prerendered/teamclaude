@@ -4,18 +4,28 @@ A versioned repo of Claude Code agents, skills, and artifact templates that inst
 
 ## Install
 
-From your project's root:
+Ask Claude Code to follow these steps. They work for a new project or one already underway, and for a private repo, as long as `gh` is signed in.
 
-```bash
-bunx github:Prerendered/teamclaude init
-```
+1. Clone to a temp folder outside the project, at a release tag (`--dry-run` needs `v3.0` or later):
+   ```bash
+   gh repo clone Prerendered/teamclaude <temp> -- --depth 1 --branch <tag>
+   ```
+2. Check the project: clean git state and no agents running. On an `update`, also no cards in flight.
+3. From the project's root, preview the install, show the result, and get confirmation:
+   ```bash
+   node <temp>/bin/cli.mjs <init|update> --dry-run
+   ```
+4. Run the same command without `--dry-run`: `init` for a new install, `update` for an existing one. If `.claude/` exists with no teamclaude install, `init` refuses; stop and ask before using `--force`.
+5. Work on a branch and open a PR. The Overseer `CLAUDE.md` replaces the project's own, so merge anything still needed from `CLAUDE.md.bak`.
+6. Delete the temp clone.
 
-Downloads the template and lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
+The clone never touches your project; only the installer writes to it. Anything it replaces or removes that differs from the new version is first copied to `.teamclaude-backup/<timestamp>/` (gitignored), and a changed `CLAUDE.md` also to `CLAUDE.md.bak`.
+
+The install lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
 `team/` is the team's local working state (plan, boards, reports, story plans) and is added
 to `.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
 `.worktrees/` (one checkout per story in flight) is always ignored.
-The **stack is chosen at the Tech gate** (the architect researches options, you pick), so no flags are needed. `npx` works identically.
-Pin a release with a ref: `bunx github:Prerendered/teamclaude#v2.0 init`.
+The **stack is chosen at the Tech gate** (the architect researches options, you pick), so no flags are needed.
 
 | Flag | Meaning |
 |---|---|
@@ -23,16 +33,20 @@ Pin a release with a ref: `bunx github:Prerendered/teamclaude#v2.0 init`.
 | `--repertoire <url>` | Optional. Git URL of a cross-project [repertoire](#repertoire-cross-project-memory) repo. When set, the team consults past projects at intake and saves this one at wrap. Omit to disable. |
 | `--track-team` | Optional. Commit `team/` with the project instead of gitignoring it. Recorded in `team/state.md`, so `update` keeps it. |
 | `--force` | `init` only. Reinstall over an existing `.claude/` directory. |
+| `--dry-run` | List what would be added, replaced, removed, and backed up. Writes nothing. |
 
-**Updating** an existing install: `bunx github:Prerendered/teamclaude update`. It replaces the
-template's agents, skills, and `CLAUDE.md` (a changed `CLAUDE.md` is kept as `CLAUDE.md.bak`),
-seeds any new `team/` stubs, and leaves `.claude/settings.json`, your own agents/skills, and
-existing `team/` artifacts untouched. The bash installer's equivalent is `--update`.
+**Updating** an existing install replaces the template's agents, skills, and `CLAUDE.md`
+(with the backups above), seeds any new `team/` stubs, and leaves `.claude/settings.json`,
+your own agents/skills, and existing `team/` artifacts untouched. The bash installer's
+equivalent is `--update`.
 
 **Other ways to install**
 
 ```bash
-# curl one-liner
+# bunx (npx works identically); pin a release with a ref, e.g. github:Prerendered/teamclaude#v2.0
+bunx github:Prerendered/teamclaude init
+
+# curl one-liner — public repos only
 curl -sL https://raw.githubusercontent.com/Prerendered/teamclaude/main/install.sh | bash
 
 # clone and run — no network hop
@@ -41,6 +55,10 @@ cd <your-project>
 node ../teamclaude/bin/cli.mjs init
 #   or the bash installer: bash ../teamclaude/install.sh --local
 ```
+
+> **Private repo:** `bunx`/`npx` fetch through your git auth (SSH key, or a token via
+> `gh`), so this works once your GitHub access is set up. `raw.githubusercontent.com`
+> won't serve private content, so the `curl | bash` one-liner is public-only.
 
 The bash installer (`install.sh -h`) additionally takes `--version <tag>` and `--local`.
 It copies `agents/` and `skills/` into `./.claude/`, the Overseer `CLAUDE.md` into the
