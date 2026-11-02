@@ -111,7 +111,7 @@ PROJECT WRAP (if a repertoire is configured)
    └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
-The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Every session starts by reconciling worktrees, open PRs and a green main against the boards — `state.md` is a hint, git and GitHub are the truth. Recurring findings become one-line rules in `team/lessons.md`, read by every builder and reviewer on the next card, and promoted into the standards when they outgrow the project.
+The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Every session starts by reconciling worktrees, open PRs and a green main against the boards — `state.md` is a hint, git and GitHub are the truth. Recurring findings become one-line rules in `team/lessons.md`, read by every builder and reviewer on the next card, and promoted into the standards when they outgrow the project. A new feature raised mid-project goes through plan mode (Claude asks, you confirm) before anything changes, and your approval of that plan is its Gate 1.
 
 `team/board.md` starts with a Features table (Building → Testing → Accepted), then stories
 in sections — In Progress, In Review, Backlog, Done — so live work is at the top and history

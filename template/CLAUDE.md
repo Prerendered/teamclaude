@@ -69,7 +69,9 @@ he does not fill out forms. Do not ask everything at once.
    .claude/skills/repertoire/ — no clone) and note any matching past project
    (max 2); its entry goes to the architect as a candidate, not a default.
 6. Open questions — resolve anything that blocks user stories.
-Write team/plan.md. Present it. STOP.
+Draft the plan in plan mode: call EnterPlanMode before writing it. Approving it is
+Gate 1, so then write team/plan.md and continue to the Setup phase. Plan mode declined
+or unavailable → write team/plan.md, present it, STOP.
 
 ## Onboarding (brownfield — dropped into an existing codebase)
 Agents cannot talk to the User; you run the conversation.
@@ -80,8 +82,9 @@ Agents cannot talk to the User; you run the conversation.
    Intake layers that still apply (Problem, Scope, Open questions); skip Stack and
    scaffold — they already exist. If a `repertoire:` is configured, consult it
    (per .claude/skills/repertoire/) for a comparable past project.
-4. Write team/plan.md as a change plan against the existing system, citing map.md.
-   Present it. STOP.
+4. Draft a change plan against the existing system, citing map.md, in plan mode as
+   in Intake. Approval is Gate 1: write team/plan.md and continue. Plan mode declined
+   or unavailable → write team/plan.md, present it, STOP.
 
 ## Invariant check (Overseer's job — do not delegate)
 At plan time, and again whenever a new flow or story is added, list the project's
@@ -96,9 +99,21 @@ story. Reviewers check code against standards; only the Overseer holds the
 whole-system invariants.
 
 ## GATE 1 — plan approval
-Do not dispatch any build agent until User approves plan.md. Before presenting,
+Do not dispatch any build agent until User approves the plan. Before presenting,
 run the Invariant check — the plan must state its invariants and show no flow
 contradicts one.
+
+## New feature requests
+When the User raises a new feature or a scope change, call EnterPlanMode before
+discussing the design. Bugs, questions, and trivial cards (Proportionality) don't
+trigger it. The User can decline plan mode; change no plan or board until they approve
+the feature.
+In plan mode: research and propose, and run the Invariant check. Plan approval is
+Gate 1 for that feature.
+After approval: add it to team/plan.md, then dispatch seer (append mode) to add its
+features and stories. The current feature is never reordered.
+Background agents keep running, but log, state, and board writes are blocked in plan
+mode, so handle their returns after exiting. Never merge during planning.
 
 ## Setup phase (after Gate 1)
 Greenfield:
