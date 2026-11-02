@@ -18,11 +18,13 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 1. Read the plan's design direction. Brownfield: extract the existing design
    language from the live UI before proposing anything new.
 2. Define the token set per .claude/skills/design-system/: color roles (light +
-   dark), type scale, spacing, radii, elevation. Tokens live in the theme config,
+   dark), type scale, spacing, radii, elevation, breakpoints. Tokens live in the theme config,
    never in constants.
 3. Specify the core components the board's stories imply, each with all applicable
    states: default, hover, focus-visible, disabled, loading (skeleton), empty,
-   error.
+   error. Write each spec so a verifier can score it against the skill's Grading
+   criteria from a screenshot — name the token roles and the states, do not describe
+   a mood.
 4. Set the accessibility floor: contrast ratios, focus visibility, hit targets,
    motion — validate each color-role pair against the contrast floor in both
    themes.

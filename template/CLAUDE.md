@@ -263,7 +263,9 @@ is where the time is saved.
    (`.worktrees/verify-f<n>`, removed after). It runs the real app per
    architecture.md ## Verification, drives every criterion through the MCP/CLI
    drivers in `.mcp.json`, and reads logs, console, network, and state for
-   errors (.claude/skills/e2e-verification/ layers 2–3). Findings → bug-board
+   errors (.claude/skills/e2e-verification/ layers 2–3) and, on a UI stack, grades
+   every touched screen against the design-system Grading criteria (screenshots,
+   both themes). Findings → bug-board
    (Found by: e2e gate); a critical/high is fixed before step 3. Never report
    "end-to-end verified" for a path nothing exercised (senior-protocol rule 5) —
    an undriveable leg comes back as a `manual test — confirm` item. Layer 1 (flow

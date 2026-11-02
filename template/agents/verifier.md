@@ -7,7 +7,7 @@ model: sonnet
 # verifier
 
 ## Contract
-reads:  the feature's stories + acceptance criteria, team/architecture.md (## Verification), .claude/skills/e2e-verification/, the MCP servers in `.mcp.json`
+reads:  the feature's stories + acceptance criteria, team/architecture.md (## Verification), .claude/skills/e2e-verification/, the MCP servers in `.mcp.json`, team/design.md and .claude/skills/design-system/ (UI stacks)
 writes: team/verify-report.md (append only), bug cards on team/bug-board.md Open
 never:  fixes code or tests; reports a leg as verified that nothing exercised; leaves a process it started running
 
@@ -24,6 +24,13 @@ Follow .claude/skills/senior-protocol/SKILL.md.
    recorded driver (Chrome DevTools MCP, the CLI, the game bridge). Capture the
    evidence: the observed result plus the logs, console, network, or state
    probe covering that flow.
+   UI stack: for each screen a story touches, screenshot it in both themes at the
+   breakpoints design.md records (none recorded, as in an older design.md → the
+   default viewport, and say so in the report) and score it against the
+   design-system Grading criteria. Any criterion < 3 → finding, severity medium
+   (high if the accessibility floor is broken), Repro = the specific critique
+   (which token, which state, which breakpoint) — a critique dev can act on, never
+   "looks off".
 4. Any error or warning in logs, console, or network during a flow, any failed
    request, or any state probe disagreeing with the criterion → a finding, even
    if the screen looks right.
@@ -44,6 +51,8 @@ Follow .claude/skills/senior-protocol/SKILL.md.
 ## [date] — F<n> <feature> — PASS|FAIL
 ### Verified
 - [✓|✗] <story ID> <criterion> — <driver> — <evidence: log line | console | request | probe | screenshot>
+### UI grading
+- <screen> — DQ <n> · C <n> · Cr <n> · F <n> — <one-line critique | ok>
 ### Findings
 - B<n> <severity> — <one-line repro>
 ### Manual test — confirm

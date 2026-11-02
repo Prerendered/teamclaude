@@ -13,6 +13,7 @@ description: Token structure, the component-state matrix, and the accessibility 
 | Spacing | one scale (e.g. 4px base); components compose from it |
 | Radii | named steps (sm / md / lg / full) |
 | Elevation | shadow steps mapped to z-intent |
+| Breakpoints | the named widths where the layout changes; the verifier grades at each |
 
 Reference by role, never raw value — `bg-surface`, not `bg-[#111]`. Roles carry a
 light and dark value; the theme toggle swaps the map, not the components.
@@ -31,6 +32,18 @@ A spec missing a state is incomplete — dev builds exactly what is specced, no 
   outline without a replacement.
 - Hit target: ≥ 44×44px interactive area.
 - Motion: honor `prefers-reduced-motion`; never signal state through motion alone.
+
+## Grading criteria
+The designer writes design.md so that each criterion can be checked from a screenshot;
+the verifier scores each screen against them at Feature acceptance, 1–5, in both
+themes. Score < 3 on any criterion is a finding.
+
+| Criterion | What a 5 looks like | What a 1 looks like |
+|---|---|---|
+| Design quality | clear hierarchy; type scale and spacing scale honoured; one visual idea per screen | arbitrary sizes, cramped or floating elements, no hierarchy |
+| Consistency | every colour/space/radius is a token role from design.md; state matrix complete | raw hex/px values; missing hover/focus/disabled/empty states |
+| Craft | aligned, responsive at the recorded breakpoints, no layout shift, visible focus rings, contrast floor met | misalignment, overflow, jank, invisible focus, failed contrast |
+| Functionality | every state (loading, empty, error) renders as specced and is reachable | a state is unreachable, blank, or shows developer text |
 
 ## Decisions
 Record token and pattern choices in team/design.md's Decisions block — chose X over
