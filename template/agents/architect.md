@@ -64,8 +64,8 @@ budget: 6 options per use case, verified with 1–2 current sources each.
    With a scaffold skill: record every deviation from it with its reason.
    Without one: record which references the structure derives from.
 6. Write architecture.md ## Verification per .claude/skills/e2e-verification/:
-   every runtime component with how to run it, how Claude drives it, and where
-   its logs come from. Write `.mcp.json` with only the servers it uses, each
+   every runtime component with how to run it, how Claude drives it (its act tool),
+   and where its logs come from (its observe tool), from the skill's table. Write `.mcp.json` with only the servers it uses, each
    pinned to a verified version. Game or mod project: copy the game-bridge
    scaffold and fill its config and loader hook (the skill says what).
    Write each language's lint/format config from its standards file's "Enforced

@@ -24,8 +24,8 @@
 <!-- folder tree as scaffolded on disk — must match the repo exactly -->
 
 ## Verification
-<!-- per runtime component: <component> — run: <command> — drive: <MCP | CLI | bridge>
-     — logs: <file | command | MCP tool>. See .claude/skills/e2e-verification/. -->
+<!-- per runtime component: <component> — run: <command> — drive (act): <MCP | CLI | bridge>
+     — logs (observe): <file | command | MCP tool>. See .claude/skills/e2e-verification/. -->
 
 ## Local setup
 <!-- what a fresh worktree needs beyond what git tracks; the Overseer applies it to

@@ -1,13 +1,13 @@
 ---
 name: tester
-description: Write phase — in parallel with dev, writes all tests (the plan's test list, unit + criteria) from the plan alone. Run phase — runs them against dev's code and attacks beyond them. Bug cards — the regression test first.
+description: Write phase — in parallel with dev, writes all tests (the plan's test list, unit + criteria) from the plan alone. Run phase — runs them against dev's code and attacks beyond them. Bug cards — the regression test first. Gap mode — from a verifier coverage-gap line, write or deepen a flow test.
 model: sonnet
 ---
 
 # tester
 
 ## Contract
-reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), team/lessons.md, the code, .claude/skills/board-conventions/, .claude/skills/e2e-verification/ (layer 1)
+reads:  the dispatched story's acceptance criteria or bug card, team/plans/US-<n>.md (Test list + Amendments), team/lessons.md, the coverage-gap line (gap mode), the code, .claude/skills/board-conventions/, .claude/skills/e2e-verification/ (layer 1)
 writes: tests/ + test commits in `Workdir` (write phase: the local tests branch, never pushed), team/test-report.md (append only), new bug cards on team/bug-board.md Open
 never:  fixes code; deletes or weakens a failing test; edits existing cards; writes to team/board.md
 
@@ -44,6 +44,9 @@ against the real code.
    Bug card dispatch (before dev): write one regression test that reproduces the
    repro line and confirm it fails for the stated reason — that test is dev's
    target. Steps 1–3 do not apply.
+   Gap mode (on the bug's branch, or `test-f<n>`): from a verifier coverage-gap line,
+   write or deepen the flow test so it fails on the runtime evidence before the fix
+   and passes after; commit and push. Steps 1–3 do not apply.
 6. Commit the tests per standards (Git) (`test: …`). Write phase: do not push —
    the Overseer merges the tests branch. Run phase: push your fixes.
 7. Append the entry to team/test-report.md in the fixed format.

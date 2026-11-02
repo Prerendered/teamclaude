@@ -37,7 +37,7 @@ stream.
 
 | Stack piece | Drive | Logs / evidence |
 |---|---|---|
-| Web frontend | Chrome DevTools MCP (`chrome-devtools-mcp`): navigate, click, fill, screenshot | console with source-mapped stacks, network requests, performance trace |
+| Web frontend | **Act:** Playwright MCP (`@playwright/mcp`): navigate, click, fill, assert, screenshot, trace | **Observe:** Chrome DevTools MCP (`chrome-devtools-mcp`), attached to the same browser: console with source-mapped stacks, network requests, performance trace |
 | Local server / API | its dev command, run in the background; HTTP calls | the background command's captured stdout/stderr |
 | Hosted backend (Convex, Supabase, …) | its CLI or official MCP | the platform's log command or MCP |
 | Desktop webview (Tauri) | Chrome DevTools MCP attached to the webview's remote-debugging port (WebView2) — verify per project | console + network as web; Rust side via the background command's captured output |
@@ -46,6 +46,18 @@ stream.
 
 Rules:
 - The verifier's worktree is bootstrapped like any other, on its own slot.
+- One act tool and one observe tool per component. Never two drivers: Playwright acts,
+  DevTools observes. A criterion that is a timing uses DevTools' performance trace. An
+  attach-only target (the Tauri row) keeps DevTools for both. An existing project
+  whose `## Verification` has no split keeps its recorded driver.
+- Sharing the browser: start Chrome yourself as a background command, with
+  `--remote-debugging-port=<port>` and a temp `--user-data-dir`, before the first MCP
+  call, and stop it with the rest. Both servers attach to that port. Never use
+  DevTools' `--slim`: it drops the console and network tools. Proven on
+  `@playwright/mcp` 0.0.84 and `chrome-devtools-mcp` 1.12.0; re-check when pinning newer
+  versions. That DevTools version needs Node ^20.19, ^22.12, or 23+.
+- Traces: one Playwright trace per flow (`browser_start_tracing`,
+  `browser_stop_tracing`), in a temp dir, never the repo; the path goes in the report.
 - Every component needs a log source Claude can read without the User. "Look at
   the window" is not a log source.
 - An error in the logs, console, or network during a flow is a finding even if
@@ -61,6 +73,8 @@ Rules:
   Code on first use.
 - Pin every server to an exact version verified in its repo or registry — never
   `@latest` — same rule as CI actions.
+- `--caps=testing,devtools` on Playwright MCP gives the `browser_verify_*` assertions
+  (`testing`) and the tracing tools (`devtools`).
 - Only servers the project's `## Verification` actually uses. No secrets in the
   file: reference env vars by name.
 
@@ -68,7 +82,8 @@ Example:
 ```json
 {
   "mcpServers": {
-    "chrome-devtools": { "command": "npx", "args": ["-y", "chrome-devtools-mcp@<verified-version>"] },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@<verified-version>", "--cdp-endpoint", "http://127.0.0.1:9222", "--caps=testing,devtools", "--output-dir", "${TEMP:-/tmp}/verify-traces"] },
+    "chrome-devtools": { "command": "npx", "args": ["-y", "chrome-devtools-mcp@<verified-version>", "--browserUrl", "http://127.0.0.1:9222"] },
     "game-bridge": { "command": "node", "args": ["tests/tools/mcp/game-bridge/server.mjs"] }
   }
 }

@@ -269,7 +269,7 @@ writes tests — dev's obligation is to keep the existing suite green.
 
 ## Git
 
-Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `contract-f<n>` (a feature's types and constants), `docs-f<n>` (feature docs); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
+Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `contract-f<n>` (a feature's types and constants), `docs-f<n>` (feature docs), `test-f<n>` (a feature's coverage gaps); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
 
 Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch carries it. Squash merge to `main` via auto-merge; PRs require green CI.
 
