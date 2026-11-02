@@ -7,9 +7,6 @@ wip: 4
 ## Current feature
 [e.g. F2 — Accounts · Building · start commit: <sha>]
 
-## What was last worked on
-- [completed task]
-
 ## In progress (resume here)
 - [what is actively being worked on]
 - [exact file and function if mid-implementation]
@@ -19,6 +16,3 @@ wip: 4
 
 ## Open questions / blockers
 - [any decision pending or recently made]
-
-## Files touched recently
-- [file path] — [what changed]

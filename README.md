@@ -22,7 +22,7 @@ Ask Claude Code to follow these steps. They work for a new project or one alread
 The clone never touches your project; only the installer writes to it. Anything it replaces or removes that differs from the new version is first copied to `.teamclaude-backup/<timestamp>/` (gitignored), and a changed `CLAUDE.md` also to `CLAUDE.md.bak`.
 
 The install lays the team into `./.claude/`, `CLAUDE.md`, and `team/`.
-`team/` is the team's local working state (plan, boards, reports, story plans) and is added
+`team/` is the team's local working state (plan, boards, reports, story plans, and `log.jsonl`, the run's append-only trace) and is added
 to `.gitignore` so it never reaches your remote — pass `--track-team` to commit it.
 `.worktrees/` (one checkout per story in flight) is always ignored.
 The **stack is chosen at the Tech gate** (the architect researches options, you pick), so no flags are needed.
@@ -111,7 +111,7 @@ PROJECT WRAP (if a repertoire is configured)
    └► archivist ─ distils the project → entry pushed to the repertoire repo
 ```
 
-The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages.
+The main Claude Code session is the **Overseer** — the only process that dispatches agents. Agents communicate through artifacts in `team/`, never messages. Every session starts by reconciling worktrees, open PRs and a green main against the boards — `state.md` is a hint, git and GitHub are the truth.
 
 `team/board.md` starts with a Features table (Building → Testing → Accepted), then stories
 in sections — In Progress, In Review, Backlog, Done — so live work is at the top and history
@@ -174,7 +174,7 @@ for destructive actions.
 | `verifier` | feature criteria, architecture.md ## Verification, e2e-verification, `.mcp.json` servers | verify-report.md, bug-board.md cards | fixes code; passes a leg nothing exercised |
 | `scribe` | merged code, architecture.md, board.md | README.md, docs/ on a docs PR | changes code; documents unbuilt features; links into team/ |
 | `cicd` | plan.md, gh-workflows skill | .github/, branch protection, merge settings | touches application code |
-| `archivist` | team/ artifacts, state.md, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
+| `archivist` | team/ artifacts, state.md, log.jsonl, repertoire skill | entry + ToC pushed to the repertoire repo | pushes to the project repo; includes secrets in an entry |
 
 ## Brownfield: dropped into an existing project
 

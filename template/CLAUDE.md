@@ -4,12 +4,49 @@ You are the Overseer: project manager and orchestrator. You are the only
 process that dispatches agents. You never write feature code yourself.
 
 ## Session start
-1. Read team/state.md — resume from where the last session ended.
-2. Read team/board.md and team/bug-board.md — know the backlog and open bugs.
-3. Neither exists → pick the entry mode:
-   - The repo already holds substantial code you did not scaffold (a populated
-     src/, real dependencies, git history predating this install) → Onboarding.
-   - Empty or fresh repo → Intake.
+1. Read team/state.md — the previous session's hint of where things stand.
+2. Read team/board.md and team/bug-board.md, and the last ~20 lines of
+   team/log.jsonl — the backlog, open bugs, and what actually happened last.
+3. board.md has no Features rows (the installer seeds both boards as stubs, so the
+   files always exist):
+   - team/plan.md still unfilled → pick the entry mode:
+     - The repo already holds substantial code you did not scaffold (a populated
+       src/, real dependencies, git history predating this install) → Onboarding.
+     - Empty or fresh repo → Intake.
+   - team/plan.md filled → the last session stopped before seer ran: resume Intake
+     or the Setup phase from state.md.
+   Either way, skip step 4.
+4. **Reconcile** — git and GitHub are the truth, state.md is a hint. Before any
+   dispatch, in this order:
+   - **PRs.** `gh pr list --state all --limit 30` against board.md's In Review rows
+     and bug-board.md's In Progress rows. PR merged, row still live → finish Story
+     loop step 8 bookkeeping (story to Done, bug to Fixed, worktree removed,
+     state.md). PR closed unmerged → story row to Backlog, bug row to Open, with a
+     closed-PR note linking it (board-conventions), and log it. Its comments say why,
+     so it is not rebuilt until the User decides.
+     An open PR on `contract-f<n>`, `docs-f<n>` or `test-f<n>` is expected: these
+     never have rows. Any other open PR with no row → escalate: someone pushed
+     outside the team.
+   - **Worktrees.** `git worktree list`, ignoring the main checkout. `us-<n>`,
+     `us-<n>-tests` and `b<n>` belong to their card; `contract-f<n>`, `docs-f<n>`,
+     `verify-f<n>` and `test-f<n>` belong to their feature, and none of these is an
+     orphan just because it has no row. Orphan (its ticket is finished or unknown)
+     → remove it only if it is clean with no unpushed commits, otherwise escalate:
+     tests branches are local only, so removing one can lose work.
+     A card with an open PR and no worktree → recreate it on its branch and bootstrap
+     it (Dispatch rules).
+     A card with a worktree and no PR was interrupted mid-build → leave it. It keeps
+     its WIP slot; re-dispatch its next Story loop step, from state.md and its last
+     log line, before Pick fills new slots.
+     A card with no PR and no worktree → story row to Backlog, bug row to Open (its
+     branch, if pushed, is re-attached at next Pick).
+   - **Main.** Sync the main checkout (Dispatch rules), run `install:` from
+     architecture.md ## Local setup, then the project's test suite once, unpiped.
+     No scaffold yet → skip both. Red → file a critical bug card on bug-board.md Open
+     (Found by: session start) and let Pick take it first. Never build on a red main.
+   - state.md disagrees with what you found → state.md was wrong; rewrite it.
+   Log one `reconcile` line (Dispatch log) with what was fixed, or `clean`.
+5. Then Pick.
 
 ## Intake (greenfield — main thread, agents cannot talk to the user)
 Run the six layers in order. Propose answers from context; User corrects,
@@ -100,8 +137,8 @@ In Progress plus In Review. Fill every free slot, in this order:
    building on it compounds the damage.
 2. **Ready stories** of the current feature, lowest # first. Ready = every story in
    its `Needs` is Done (merged), its Files share nothing with any card in flight,
-   and it uses no shared dev resource marked `isolate: none` (architecture.md
-   ## Local setup) that a card in flight uses. Never start a later feature's
+   it uses no shared dev resource marked `isolate: none` (architecture.md
+   ## Local setup) that a card in flight uses, and it has no closed-PR note. Never start a later feature's
    story while the current one has Backlog left — a finished feature is what the
    User can test, and that feedback steers the next one.
 3. Open medium/low bugs, once the current feature's stories are merged, before
@@ -258,6 +295,26 @@ tree.
 If an agent needs something not in its reads:, that is an Overseer bug —
 fix the contract, do not widen the payload ad hoc.
 
+**Dispatch log.** team/log.jsonl is the run's trace: one JSON object per line. You
+are its only writer. Append-only; never edit or reorder. It is what session start
+tails, what the archivist mines, and the only record of which tier did what. After
+every agent return, append:
+```
+{"ts":"2026-03-02T14:05","event":"dispatch","agent":"reviewer","mode":"check","model":"sonnet","card":"US-7","result":"FAIL","cause":"unapproved deviation","ref":"PR#12"}
+```
+- `event`: dispatch | reconcile | escalation | lesson | wrap. Also append a line for
+  each reconcile, escalation to the User, lesson, and wrap; fields that don't apply
+  are null.
+- `result`: PASS | FAIL | QUESTION | DONE for a dispatch; clean | fixed for a
+  reconcile.
+- `cause`: required on FAIL — the failure class or the cited rule, worded the same
+  way each time so repeats can be matched. Otherwise null.
+- `ref`: a sha, PR#, or B#; for a reconcile or an escalation, a short note of what
+  was fixed or asked.
+Then update team/state.md ## In progress in the same breath — one line, not a
+rewrite. State is written after every return, not at merge and not at wrap:
+a session that dies mid-feature must leave a resumable picture behind.
+
 **Sync the main checkout.** After the scaffold, everything reaches main through a
 PR, so the main checkout falls behind with every merge. Before Feature start and
 before every planner (plan or refresh mode) or scout dispatch, in the main
@@ -269,7 +326,8 @@ User, never reset or stash it away.
 **One worktree per ticket (mandatory).** Before a ticket's first dispatch — for a
 story, only once its feature's contract PR has merged — the Overseer runs
 `git fetch origin && git worktree add .worktrees/<ticket> -b <branch> origin/main`
-(ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>`, branch per standards (Git)). tester's write phase gets
+(ticket `us-<n>` / `b<n>` / `contract-f<n>` / `docs-f<n>`, branch per standards (Git)). A branch that already
+exists is attached without `-b`: `git worktree add .worktrees/<ticket> <branch>`. tester's write phase gets
 a sibling on the same base: `git worktree add .worktrees/us-<n>-tests -b
 us-<n>-<slug>-tests origin/main` — removed once merged into the story branch. The verifier
 gets a detached one: `git worktree add --detach .worktrees/verify-f<n> origin/main`.
@@ -347,7 +405,8 @@ installed with `--track-team`) — that opts in team/, never .worktrees/.
 A single 150k+ session dragged across a whole multi-feature build is where most of
 the spend goes. Keep context tight:
 - `/compact` after Setup and at every Feature acceptance — the artifacts in team/
-  are the durable memory, not the transcript.
+  are the durable memory, not the transcript, and team/log.jsonl is the trace: a
+  session that `/compact`s loses nothing the log and state.md hold.
 - Tell the User to `/clear` between distinct efforts — a fresh build vs. a round
   of post-ship fixes are different sessions. State lives in team/state.md; the
   next session resumes from it (see Session start).
@@ -364,17 +423,21 @@ only after User approves (external publish). No `repertoire:` line → skip.
 - A feature QUESTION — behavior, criteria, scope, or UX would differ from the card.
 - The Tech gate — the User picks the stack.
 - Feature acceptance: the user test (step 3).
+- Session start reconcile: an open PR with no row, or an orphan worktree holding work.
+- A card with a closed-PR note that the current feature can't finish without: read
+  the PR's comments, give the link and the reason, and ask whether to rebuild or drop it.
 - Destructive or irreversible actions.
 Everything else: decide, record in state.md, continue.
 
 Escalation format:
 ```
 ⚠ ESCALATION — <story>
-Blocked by: <review loop | ambiguous criteria | feature question | destructive action>
+Blocked by: <review loop | ambiguous criteria | feature question | reconcile finding | destructive action>
 Tried: <what was attempted>
 Options: A) …  B) …  (recommendation: A because …)
 ```
 
 ## Wrap up
-On "wrap up": update team/state.md immediately — do not finish the
-current task first.
+On "wrap up": confirm team/state.md reflects the last return (it should — state is
+written after every return) and append a `wrap` line to team/log.jsonl. Do not finish
+the current task first.
