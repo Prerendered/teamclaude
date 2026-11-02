@@ -85,8 +85,8 @@ Overseer then gates each merge itself (CLAUDE.md, Story loop step 8).
 
 ## Merge settings
 
-Every story PR is squash-merged by auto-merge, and its title becomes the one
-commit on main:
+Every story PR is squash-merged by auto-merge. The Overseer sets the commit
+subject when it merges, since the PR title is only the card ID:
 
 ```bash
 gh repo edit --enable-auto-merge --delete-branch-on-merge   --enable-squash-merge --enable-merge-commit=false --enable-rebase-merge=false
@@ -95,5 +95,5 @@ gh api -X PATCH "repos/{owner}/{repo}"   -f squash_merge_commit_title=PR_TITLE -
 
 Result to verify (`gh api repos/{owner}/{repo}`): `allow_auto_merge` and
 `delete_branch_on_merge` true, only `allow_squash_merge` true, squash title
-`PR_TITLE`, message `BLANK` — so main reads `<type>: <description> (#n)` and
-nothing else.
+`PR_TITLE`, message `BLANK` — with that subject, main reads
+`<type>: <description> (#n)` and nothing else.

@@ -254,19 +254,20 @@ tiers); more than 2 returns from the same step → escalate to User.
    no criterion-coverage item). FAIL (including `unapproved deviation`) →
    dev → 5.
 6. **PR** — Overseer, from the worktree: `gh pr create --base main --title
-   "<type>: <description>" --body-file <file>`, title and lean body per
-   standards (Git). The title becomes the squash commit on main.
+   "<card ID>" --body-file <file>`, title and lean body per standards (Git).
 7. **PR review** — dispatch reviewer (pr mode); also security (card mode) if the
    card touches auth, input, data, or dependencies. Both post on the PR. A blocker,
    or a high/critical finding → dev pushes a fix → back to 5. Security medium/low →
    bug-board; should-fix and nit stay on the PR and do not block.
-8. **Merge** — `gh pr merge <pr> --squash --auto --delete-branch`; GitHub merges
-   once the required CI check is green. `merge: manual` in state.md (no branch
+8. **Merge** — `gh pr merge <pr> --squash --auto --delete-branch --subject
+   "<type>: <description> (#<pr>)"`; GitHub merges once the required CI check is
+   green. The subject is the one commit on main, per standards (Git). `merge: manual` in state.md (no branch
    protection or auto-merge on this repo) → the Overseer is the gate GitHub
    would have been: `gh pr checks <pr> --watch --fail-fast` exits 0; `git fetch
    origin && git merge-base --is-ancestor origin/main origin/<branch>` exits 0
    (non-zero = behind → `gh pr update-branch <pr>`, watch again); then `gh pr
-   merge <pr> --squash --delete-branch`. Never merge on red, pending, or behind.
+   merge <pr> --squash --delete-branch --subject "<same>"`. Never merge on red,
+   pending, or behind.
    Confirm `gh pr view <pr> --json state` is
    `MERGED` — that, not "pushed", is the green signal (senior-protocol rule 5). CI
    red → read the failing job, back to dev → 5. Branch behind main after another
@@ -274,7 +275,7 @@ tiers); more than 2 returns from the same step → escalate to User.
    the top of Done, `git worktree remove .worktrees/<ticket>`, update state.md.
    Done means merged; nothing else counts.
 Bug card: tester writes the regression test (left failing) → dev → steps 5–8 on
-branch `b<n>-<slug>` (PR title `fix: <description>`), row → Fixed. Planner only
+branch `b<n>-<slug>` (PR title `B<n>`, merge subject `fix: …`), row → Fixed. Planner only
 if the root cause is unclear.
 Merging stays one at a time — main is protected with "branch up to date", so
 after each merge, `gh pr update-branch` the next ready PR and let its CI rerun.

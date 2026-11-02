@@ -285,14 +285,14 @@ writes tests — dev's obligation is to keep the existing suite green.
 
 Branches: the ticket — `us-<n>-<slug>` (story), `b<n>-<slug>` (bug), `contract-f<n>` (a feature's types and constants), `docs-f<n>` (feature docs), `test-f<n>` (a feature's coverage gaps); kebab-case. One ticket per branch. Branch off `origin/main` only. Deleted on merge. Never commit directly to `main`.
 
-Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch carries it. Squash merge to `main` via auto-merge; PRs require green CI.
+Commits: `<type>: <description>` — imperative, lowercase, no period (`feat: add user auth and cache`). Types: feat, fix, test, refactor, docs, chore, ci. No ticket ID in the message — the branch and PR title carry it. Squash merge to `main` via auto-merge, with the subject `<type>: <description> (#<pr>)`; PRs require green CI.
 
 Commit body: terse. The subject line alone is enough for most commits; add a body only to record *why* a non-obvious change was made, in one or two lines — never a multi-paragraph changelog restating the diff.
 
-PR title: the squash commit on `main`, so the same `<type>: <description>` format. PR body, lean:
+PR title: only the card ID — `US-123`, `B12`, `contract-f2`, `docs-f2`, `test-f2`. Everything else goes in the PR body, lean:
 
 ```
-US-<n> · <story title>          (bug: B<n> · <bug>)
+<story title>                   (bug: <bug>)
 
 <2–3 line summary>
 
