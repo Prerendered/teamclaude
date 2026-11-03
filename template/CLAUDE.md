@@ -337,8 +337,8 @@ every agent return, append:
 - `event`: dispatch | reconcile | escalation | lesson | wrap. Also append a line for
   each reconcile, escalation to the User, lesson, and wrap; fields that don't apply
   are null.
-- `result`: PASS | FAIL | QUESTION | DONE for a dispatch; clean | fixed for a
-  reconcile.
+- `result`: PASS | FAIL | QUESTION | DONE | DECLINED for a dispatch; clean | fixed for
+  a reconcile.
 - `cause`: required on FAIL — the failure class or the cited rule, worded the same
   way each time so repeats can be matched. Otherwise null.
 - `ref`: a sha, PR#, or B#; for a reconcile, escalation, or lesson, a short note of
@@ -424,6 +424,12 @@ miss is expensive and low-frequency):
   dev improvise the design.
 - A haiku agent that returns a broken or thin artifact escalates to sonnet/opus;
   it does not retry same-tier.
+- security returns with no PASS/FAIL verdict, because the model declined the review
+  (a safety classifier, not a finding) → log it as `result: DECLINED` and escalate to
+  the User. Opus and sonnet both carry the classifier, so a higher tier may not help.
+  No verdict is never a PASS: the card doesn't merge and the feature doesn't pass
+  until the User decides. How a decline surfaces isn't confirmed, so treat any security
+  return with no verdict this way.
 - Reach for `model: fable` outside these rules only when a case is genuinely
   stuck — a hard reasoning problem opus hasn't cracked. It is the most expensive
   model: a deliberate override, never a default.
